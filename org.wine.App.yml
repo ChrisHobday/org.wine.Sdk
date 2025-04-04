@@ -11,6 +11,7 @@ finish-args:
   # - --socket=wayland                                       # Access to Wayland socket for display
   - --socket=fallback-x11                                  # Access to X11 socket for display (incase wayland doesn't work)
   - --socket=pulseaudio                                    # Access to pulse audio socket for sound
+  # - --allow=bluetooth                                      # Access to bluetooth
   - --share=network                                        # Access to networking
   - --share=ipc                                            # Access to host IPC namespace
   - --talk-name=org.freedesktop.ScreenSaver                # Can talk to Screensaver (Allows preventing Screensaver)
@@ -45,9 +46,9 @@ cleanup-commands:
 modules:
   - name: App
     sources:
-      # - type: git
-      #   url: https://github.com/katahiromz/smallexe
-      #   commit: 279c5a350bce0d1462377cda49cc5a953f2910ca
+      - type: git
+        url: https://github.com/katahiromz/smallexe
+        commit: 279c5a350bce0d1462377cda49cc5a953f2910ca
 
       - type: file
         url: https://www.battle.net/download/getInstallerForGame?os=win&version=LIVE&gameProgram=BATTLENET_APP
@@ -56,11 +57,12 @@ modules:
 
       - type: file
         path: org.wine.App.metainfo.xml
+
     buildsystem: simple
     build-commands:
       - |
-        # install -Dm744 smallexe.exe -t /app/bin
-        # install -Dm744 smallexe64.exe -t /app/bin
+        install -Dm744 smallexe.exe -t /app/bin
+        install -Dm744 smallexe64.exe -t /app/bin
         install -Dm744 Battle.netSetup.exe -t /app/bin
         install -Dm644 org.wine.App.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo
 
