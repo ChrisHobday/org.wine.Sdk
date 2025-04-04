@@ -10,49 +10,25 @@ finish-args:
   - --socket=pulseaudio             # Access to pulse audio socket for sound
   - --env=WINEPREFIX=/var/data/wine # Set prefix location
   # - --env=WINEARCH=win32            # Set Wine to 32bit mode (64bit mode is default)
-# inherit-extensions:
-#   - org.freedesktop.Platform.Compat.i386
-#   - org.freedesktop.Platform.GL32
-#   - org.freedesktop.Platform.ffmpeg-full
-#   - org.freedesktop.Platform.ffmpeg_full.i386
-x-gl-version: &gl-version '1.4'
-x-gl-versions: &gl-versions 24.08;1.4
-x-gl-merge-dirs: &gl-merge-dirs vulkan/icd.d;glvnd/egl_vendor.d;egl/egl_external_platform.d;OpenCL/vendors;lib/dri;lib/d3d;lib/gbm;vulkan/explicit_layer.d;vulkan/implicit_layer.d
-add-extensions:
-  org.freedesktop.Platform.Compat.i386:
-    directory: lib/i386-linux-gnu
-    version: '24.08'
-
-  org.freedesktop.Platform.Compat.i386.Debug:
-    directory: lib/debug/lib/i386-linux-gnu
-    version: '24.08'
-    no-autodownload: true
-
-  org.freedesktop.Platform.GL32:
-    directory: lib/i386-linux-gnu/GL
-    version: *gl-version
-    versions: *gl-versions
-    subdirectories: true
-    no-autodownload: true
-    autodelete: false
-    add-ld-path: lib
-    merge-dirs: *gl-merge-dirs
-    download-if: active-gl-driver
-    enable-if: active-gl-driver
-    autoprune-unless: active-gl-driver
-
-  org.freedesktop.Platform.GL32.Debug:
-    directory: lib/debug/lib/i386-linux-gnu/GL
-    version: *gl-version
-    versions: *gl-versions
-    subdirectories: true
-    no-autodownload: true
-    merge-dirs: *gl-merge-dirs
-    enable-if: active-gl-driver
-    autoprune-unless: active-gl-driver
+inherit-extensions:
+  - org.freedesktop.Platform.Compat.i386       # 32bit Linux compatibility
+  - org.freedesktop.Platform.Compat.i386.Debug # 32bit Linux compatibility debug
+  - org.freedesktop.Platform.GL                # OpenGL
+  - org.freedesktop.Platform.GL32              # 32bit OpenGL
+  - org.freedesktop.Platform.GL32.Debug        # 32bit OpenGL Debug
+  - org.freedesktop.Platform.VAAPI.Intel.i386  # 32bit Intel VAAPI
+  - org.freedesktop.Platform.ffmpeg-full       # FFmpeg
+  - org.freedesktop.Platform.ffmpeg_full.i386  # 32bit FFmpeg
 cleanup-commands:
-  - mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu
-  - mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu
+  # Make directories needed by extensions
+  - mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu                        # 32bit Linux compatibility
+  - mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu              # 32bit Linux compatibility debug
+  - mkdir -p ${FLATPAK_DEST}/lib/x86_64-linux-gnu/GL                   # OpenGL
+  - mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu/GL                     # 32bit OpenGL
+  - mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu/GL           # 32bit OpenGL Debug
+  - mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu/dri/intel-vaapi-driver # 32bit Intel VAAPI
+  - mkdir -p ${FLATPAK_DEST}/lib/ffmpeg                                # FFmpeg
+  - mkdir -p ${FLATPAK_DEST}/lib32/ffmpeg                              # 32bit FFmpeg
 modules:
   - name: App
     buildsystem: simple
@@ -62,4 +38,4 @@ modules:
     build-commands:
       - |
         install -Dm644 org.wine.App.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo
-        echo "ew"
+
