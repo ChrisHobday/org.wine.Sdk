@@ -8,6 +8,7 @@ runtime-version: &runtime-version '24.08'
 finish-args:
   - --sdk=org.wine.Sdk//10.0
   - --runtime=org.wine.Platform//10.0
+
 sdk-extensions:
   # - org.freedesktop.Sdk.Debug
   # - org.freedesktop.Sdk.Locale
@@ -15,12 +16,14 @@ sdk-extensions:
   - org.freedesktop.Sdk.Compat.i386              # Needed for building 32bit Wine
   - org.freedesktop.Sdk.Extension.toolchain-i386 # Needed for building 32bit Wine
   - org.freedesktop.Sdk.Extension.mingw-w64      # Needed for cross-compiling 32/64bit Wine
+
 # platform-extensions:
 #   - org.freedesktop.Platform.Locale
+
 inherit-extensions:
   # Re-export org.freedesktop.Platform extensions for child Apps to inherit
-  - org.freedesktop.Platform.GL
-  - org.freedesktop.Platform.VAAPI.Intel
+  - org.freedesktop.Platform.GL          # OpenGL
+  - org.freedesktop.Platform.VAAPI.Intel # Intel VAAPI
   - org.freedesktop.Platform.VulkanLayer
   - org.freedesktop.Platform.Timezones
   - org.freedesktop.Platform.GStreamer
@@ -28,6 +31,7 @@ inherit-extensions:
   - org.freedesktop.Platform.Icontheme
 # inherit-sdk-extensions:
 #   - org.freedesktop.Sdk.Extension
+
 add-extensions:
   # Re-export org.freedesktop.Platform extensions for child Apps to inherit
   org.freedesktop.Platform.Compat.i386:       # 32bit Linux compatibility
@@ -83,61 +87,101 @@ add-extensions:
     add-ld-path: .
     version: *runtime-version
     autodelete: false
-# cleanup-commands:
-#   - /usr/libexec/freedesktop-post.sh
+
+cleanup-commands:
+  # Make directories needed by extensions
+  - mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu                        # 32bit Linux compatibility
+  # - mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu              # 32bit Linux compatibility debug
+  # - mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu/GL           # 32bit OpenGL Debug
+  # - mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu/dri/intel-vaapi-driver # 32bit Intel VAAPI
+  - mkdir -p ${FLATPAK_DEST}/lib/ffmpeg                                # FFmpeg
+  - mkdir -p ${FLATPAK_DEST}/lib32/ffmpeg                              # 32bit FFmpeg
+  # - /usr/libexec/freedesktop-post.sh
+
 # cleanup-platform-commands:
 #   - /usr/libexec/freedesktop-post.sh
 
 modules:
-
-  - name: wine
-    buildsystem: simple
-    build-options:
-      arch:
-        x86_64:
-          append-path: /usr/lib/sdk/mingw-w64/bin:/usr/lib/sdk/toolchain-i386/bin # /usr/lib/sdk/mingw-w64/bin contains x86_64-w64-mingw32-gcc and i686-w64-minigw32-gcc compilers from sdk-extension org.freedesktop.Sdk.Extension.mingw-w64, and /usr/lib/sdk/toolchain-i386/bin contains gnu 32bit libs (needed for building the 32bit version of wine) from org.freedesktop.Sdk.Extension.toolchain-i386
+  - name: Wine
     sources:
       - type: git
         url: https://gitlab.winehq.org/wine/wine
         tag: wine-10.0
+
       - type: file
         path: org.wine.Sdk.metainfo.xml
+
       - type: file
         path: org.wine.Platform.metainfo.xml
+
+    buildsystem: simple
+    build-options:
+      arch:
+        x86_64:
+          append-path: /usr/lib/sdk/mingw-w64/bin:/usr/lib/sdk/toolchain-i386/bin # /usr/lib/sdk/mingw-w64/bin contains x86_64-w64-mingw32-gcc and i686-w64-minigw32-gcc compilers from sdk-extension org.freedesktop.Sdk.Extension.mingw-w64, and /usr/lib/sdk/toolchain-i386/bin contains gnu 32bit libs (needed for building the 32bit version of Wine) from org.freedesktop.Sdk.Extension.toolchain-i386
+
     build-commands:
       - |
-        mkdir wine64                                 # Make directory for building 64bit wine
-        mkdir wine32                                 # Make directory for building 32bit wine
+        mkdir wine64                                 # Make directory for building 64bit Wine
+        mkdir wine32                                 # Make directory for building 32bit Wine
 
         cd wine64
-        ../configure                                `# Run wine configure file to generate makefile with following flags` \
-          --prefix=${FLATPAK_DEST}                  `# Set prefix to Flatpak root (/usr for an sdk)` \
-          --enable-win64                            `# Set flag to compile windows 64bit version` \
-          --with-x                                  `# Set flag to compile with x11` \
-          --with-wayland                            `# Set flag to compile with wayland` \
-          --with-pulse                              `# Set flag to compile with pulse audio` \
-          --with-dbus                               `# Set flag to compile with dbus` \
-          CC="ccache gcc"                           `# Compile C with gcc using ccache` \
-          CXX="ccache g++"                          `# Compile C++ with g++ using ccache` \
+        ../configure                                `# Run Wine configure file to generate makefile with following flags` \
+          --prefix=${FLATPAK_DEST}                  `# Set prefix to Flatpak root (/usr for an SDK)` \
+          --enable-win64                            `# Set flag to compile Windows 64bit version` \
+          --with-x                                  `# Set flag to compile with X11` \
+          --with-wayland                            `# Set flag to compile with Wayland` \
+          --with-pulse                              `# Set flag to compile with Pulse audio` \
+          --with-dbus                               `# Set flag to compile with Dbus` \
+          CC="ccache gcc"                           `# Compile C with GCC using ccache` \
+          CXX="ccache g++"                          `# Compile C++ with G++ using ccache` \
           x86_64_CC="ccache x86_64-w64-mingw32-gcc" `# Cross-compile C with x86_64-w64-mingw32-gcc using ccache`
-        make -j`nproc --ignore=2`                    # Build 64bit wine using number of available cores minus 2
+        make -j`nproc --ignore=2`                    # Build 64bit Wine using number of available cores minus 2
         mkdir -p /usr/share/runtime/docs/man         # /usr/share/man symlinks here but it is not created by default and causes an error when make installing if not created beforehand
         make install
 
         cd ../wine32
-        ../configure                                `# Run wine configure file to generate makefile with following flags` \
-          --prefix=${FLATPAK_DEST}                  `# Set prefix to Flatpak root (/usr for an sdk)` \
-          --with-wine64=../wine64                   `# Use built 64bit wine above` \
-          --with-x                                  `# Set flag to compile with x11` \
-          --with-wayland                            `# Set flag to compile with wayland` \
-          --with-pulse                              `# Set flag to compile with pulse audio` \
-          --with-dbus                               `# Set flag to compile with dbus` \
-          CC="ccache i686-unknown-linux-gnu-gcc"    `# Compile C with gcc using ccache` \
-          CXX="ccache i686-unknown-linux-gnu-g++"   `# Compile C++ with g++ using ccache` \
+        ../configure                                `# Run Wine configure file to generate makefile with following flags` \
+          --prefix=${FLATPAK_DEST}                  `# Set prefix to Flatpak root (/usr for an SDK)` \
+          --with-wine64=../wine64                   `# Use built 64bit Wine above` \
+          --with-x                                  `# Set flag to compile with X11` \
+          --with-wayland                            `# Set flag to compile with Wayland` \
+          --with-pulse                              `# Set flag to compile with Pulse audio` \
+          --with-dbus                               `# Set flag to compile with Dbus` \
+          CC="ccache i686-unknown-linux-gnu-gcc"    `# Compile C with GCC using ccache` \
+          CXX="ccache i686-unknown-linux-gnu-g++"   `# Compile C++ with G++ using ccache` \
           x86_64_CC="ccache i686-w64-mingw32-gcc"   `# Cross-compile C with x86_64-w64-mingw32-gcc using ccache`
-        make -j`nproc --ignore=2`                    # Build 32bit wine using number of available cores minus 2
+        make -j`nproc --ignore=2`                    # Build 32bit Wine using number of available cores minus 2
         make install
 
         cd ..
-        install -Dm644 org.wine.Sdk.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo
-        install -Dm644 org.wine.Platform.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo
+        install -Dm644 org.wine.Sdk.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo/      # Install SDK metainfo
+        install -Dm644 org.wine.Platform.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo/ # Install Platform metainfo
+
+  - name: WineGecko
+    sources:
+      - type: file
+        url: https://dl.winehq.org/wine/wine-gecko/2.47.4/wine-gecko-2.47.4-x86.msi
+        sha256: 26cecc47706b091908f7f814bddb074c61beb8063318e9efc5a7f789857793d6
+
+      - type: file
+        url: https://dl.winehq.org/wine/wine-gecko/2.47.4/wine-gecko-2.47.4-x86_64.msi
+        sha256: e590b7d988a32d6aa4cf1d8aa3aa3d33766fdd4cf4c89c2dcc2095ecb28d066f
+    buildsystem: simple
+    build-commands:
+      - |
+        install -Dm755 wine-gecko-*.msi -t ${FLATPAK_DEST}/share/wine/gecko/    # Install 32bit and 64bit Wine Gecko
+        # install -Dm755 wine-gecko-2.47.4-x86.msi -t ${FLATPAK_DEST}/share/wine/gecko/    # Install 32bit Wine Gecko
+        # install -Dm755 wine-gecko-2.47.4-x86_64.msi -t ${FLATPAK_DEST}/share/wine/gecko/ # Install 64bit Wine Gecko
+
+  - name: WineMono
+    sources:
+      - type: archive
+        url: https://dl.winehq.org/wine/wine-mono/9.4.0/wine-mono-9.4.0-x86.tar.xz
+        sha256: fd772219aacf46b825fa891a647af4a9ddf8439320101c231918b2037bf13858
+        strip-components: 0
+    buildsystem: simple
+    build-commands:
+      - |
+        mkdir -p ${FLATPAK_DEST}/share/wine/mono/          # Make direcory path for Wine Mono
+        cp -a wine-mono-* ${FLATPAK_DEST}/share/wine/mono/ # Copy/Install Wine Mono keeping file permissions the same

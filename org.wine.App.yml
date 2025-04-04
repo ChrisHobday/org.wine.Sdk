@@ -4,21 +4,33 @@ sdk: org.wine.Sdk
 runtime: org.wine.Platform
 runtime-version: '10.0'
 finish-args:
-  - --allow=multiarch               # Access to 32bit libraries (for running 32bit executables)
-  - --socket=wayland                # Access to Wayland socket for display
-  - --socket=fallback-x11           # Access to X11 socket for display (incase wayland doesn't work)
-  - --socket=pulseaudio             # Access to pulse audio socket for sound
-  - --env=WINEPREFIX=/var/data/wine # Set prefix location
-  # - --env=WINEARCH=win32            # Set Wine to 32bit mode (64bit mode is default)
+  - --allow=multiarch                                      # Access to 32bit libraries (for running 32bit executables)
+  # - --device=all                                           # Access to all devices
+  - --device=dri                                           # Access to DRI for OpenGL rendering
+  - --device=input                                         # Access to input devices (Controllers, etc)
+  # - --socket=wayland                                       # Access to Wayland socket for display
+  - --socket=fallback-x11                                  # Access to X11 socket for display (incase wayland doesn't work)
+  - --socket=pulseaudio                                    # Access to pulse audio socket for sound
+  - --share=network                                        # Access to networking
+  - --share=ipc                                            # Access to host IPC namespace
+  - --talk-name=org.freedesktop.ScreenSaver                # Can talk to Screensaver (Allows preventing Screensaver)
+  # - --filesystem=host:ro                                   # Read access to common host directories
+  - --filesystem=xdg-run/app/com.discordapp.Discord:create # Read/write access to Discord's running instance (Required for setting up Discord rich presence)
+  - --filesystem=xdg-run/gamescope-0:ro                    # Read access to Gamescope's running instance (Required for Gamescope on Steam Deck)
+  - --env=WINEPREFIX=/var/data/wine                        # Set prefix location
+  # - --env=WINEARCH=win32                                   # Set Wine to 32bit mode (64bit mode is default)
+
 inherit-extensions:
   - org.freedesktop.Platform.Compat.i386       # 32bit Linux compatibility
   - org.freedesktop.Platform.Compat.i386.Debug # 32bit Linux compatibility debug
   - org.freedesktop.Platform.GL                # OpenGL
   - org.freedesktop.Platform.GL32              # 32bit OpenGL
   - org.freedesktop.Platform.GL32.Debug        # 32bit OpenGL Debug
+  - org.freedesktop.Platform.VAAPI.Intel       # Intel VAAPI
   - org.freedesktop.Platform.VAAPI.Intel.i386  # 32bit Intel VAAPI
   - org.freedesktop.Platform.ffmpeg-full       # FFmpeg
   - org.freedesktop.Platform.ffmpeg_full.i386  # 32bit FFmpeg
+
 cleanup-commands:
   # Make directories needed by extensions
   - mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu                        # 32bit Linux compatibility
@@ -29,13 +41,26 @@ cleanup-commands:
   - mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu/dri/intel-vaapi-driver # 32bit Intel VAAPI
   - mkdir -p ${FLATPAK_DEST}/lib/ffmpeg                                # FFmpeg
   - mkdir -p ${FLATPAK_DEST}/lib32/ffmpeg                              # 32bit FFmpeg
+
 modules:
   - name: App
-    buildsystem: simple
     sources:
+      # - type: git
+      #   url: https://github.com/katahiromz/smallexe
+      #   commit: 279c5a350bce0d1462377cda49cc5a953f2910ca
+
+      - type: file
+        url: https://www.battle.net/download/getInstallerForGame?os=win&version=LIVE&gameProgram=BATTLENET_APP
+        sha256: 002f33fee7b8a159058368b7e93e492931c4ca72e90660bdb2691bcd62fedd3c
+        dest-filename: Battle.netSetup.exe
+
       - type: file
         path: org.wine.App.metainfo.xml
+    buildsystem: simple
     build-commands:
       - |
+        # install -Dm744 smallexe.exe -t /app/bin
+        # install -Dm744 smallexe64.exe -t /app/bin
+        install -Dm744 Battle.netSetup.exe -t /app/bin
         install -Dm644 org.wine.App.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo
 
