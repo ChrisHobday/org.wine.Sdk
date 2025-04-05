@@ -1,13 +1,13 @@
 build-runtime: true
 id: org.wine.Sdk
 id-platform: org.wine.Platform
-branch: &app-version '10.0'
+branch: &app-version '10.5'
 sdk: org.freedesktop.Sdk
 runtime: org.freedesktop.Platform
 runtime-version: &runtime-version '24.08'
 finish-args:
-  - --sdk=org.wine.Sdk//10.0
-  - --runtime=org.wine.Platform//10.0
+  - --sdk=org.wine.Sdk//10.5
+  - --runtime=org.wine.Platform//10.5
 
 sdk-extensions:
   # - org.freedesktop.Sdk.Debug
@@ -178,7 +178,7 @@ modules:
         url: https://dl.winehq.org/wine/wine-mono/9.4.0/wine-mono-9.4.0-x86.tar.xz
         sha256: fd772219aacf46b825fa891a647af4a9ddf8439320101c231918b2037bf13858
         strip-components: 0
-        
+
     buildsystem: simple
     build-commands:
       - |
