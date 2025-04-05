@@ -2,7 +2,7 @@ id: org.wine.App
 branch: stable
 sdk: org.wine.Sdk
 runtime: org.wine.Platform
-runtime-version: '10.0'
+runtime-version: '10.5'
 finish-args:
   - --allow=multiarch                                      # Access to 32bit libraries (for running 32bit executables)
   # - --device=all                                           # Access to all devices
@@ -18,8 +18,8 @@ finish-args:
   # - --filesystem=host:ro                                   # Read access to common host directories
   - --filesystem=xdg-run/app/com.discordapp.Discord:create # Read/write access to Discord's running instance (Required for setting up Discord rich presence)
   - --filesystem=xdg-run/gamescope-0:ro                    # Read access to Gamescope's running instance (Required for Gamescope on Steam Deck)
-  - --env=WINEPREFIX=/var/data/wine                        # Set prefix location
   # - --env=WINEARCH=win32                                   # Set Wine to 32bit mode (64bit mode is default)
+  - --env=WINEPREFIX=/var/data/wine                        # Set prefix location
 
 inherit-extensions:
   - org.freedesktop.Platform.Compat.i386       # 32bit Linux compatibility

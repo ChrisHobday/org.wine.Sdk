@@ -18,7 +18,7 @@ sdk-extensions:
   - org.freedesktop.Sdk.Extension.mingw-w64      # Needed for cross-compiling 32/64bit Wine
 
 # platform-extensions:
-#   - org.freedesktop.Platform.Locale
+  # - org.freedesktop.Platform.Locale
 
 inherit-extensions:
   # Re-export org.freedesktop.Platform extensions for child Apps to inherit
@@ -30,7 +30,7 @@ inherit-extensions:
   - org.freedesktop.Platform.openh264
   - org.freedesktop.Platform.Icontheme
 # inherit-sdk-extensions:
-#   - org.freedesktop.Sdk.Extension
+  # - org.freedesktop.Sdk.Extension
 
 add-extensions:
   # Re-export org.freedesktop.Platform extensions for child Apps to inherit
@@ -90,15 +90,15 @@ add-extensions:
 
 cleanup-commands:
   # Make directories needed by extensions
-  - mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu                        # 32bit Linux compatibility
-  - mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu              # 32bit Linux compatibility debug
-  - mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu/GL           # 32bit OpenGL Debug
-  - mkdir -p ${FLATPAK_DEST}/lib/ffmpeg                                # FFmpeg
-  - mkdir -p ${FLATPAK_DEST}/lib32/ffmpeg                              # 32bit FFmpeg
-  # - /usr/libexec/freedesktop-post.sh
+  - mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu              # 32bit Linux compatibility
+  - mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu    # 32bit Linux compatibility debug
+  - mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu/GL # 32bit OpenGL Debug
+  - mkdir -p ${FLATPAK_DEST}/lib/ffmpeg                      # FFmpeg
+  - mkdir -p ${FLATPAK_DEST}/lib32/ffmpeg                    # 32bit FFmpeg
+  # - /usr/libexec/freedesktop-post.sh                         # Pre-packaged script that sets up stuff (Not sure if still required)
 
 # cleanup-platform-commands:
-#   - /usr/libexec/freedesktop-post.sh
+  # - /usr/libexec/freedesktop-post.sh # Pre-packaged script that sets up stuff (Not sure if still required)
 
 modules:
   - name: Wine
@@ -157,6 +157,7 @@ modules:
         install -Dm644 org.wine.Sdk.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo/      # Install SDK metainfo
         install -Dm644 org.wine.Platform.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo/ # Install Platform metainfo
 
+  # Wine addon that allows opening website content
   - name: WineGecko
     sources:
       - type: file
@@ -172,15 +173,35 @@ modules:
       - |
         install -Dm755 wine-gecko-*.msi -t ${FLATPAK_DEST}/share/wine/gecko/    # Install 32bit and 64bit Wine Gecko
 
+  # Wine addon that replaces the default .NET framework
   - name: WineMono
     sources:
       - type: archive
-        url: https://dl.winehq.org/wine/wine-mono/9.4.0/wine-mono-9.4.0-x86.tar.xz
-        sha256: fd772219aacf46b825fa891a647af4a9ddf8439320101c231918b2037bf13858
+        url: https://dl.winehq.org/wine/wine-mono/10.0.0/wine-mono-10.0.0-x86.tar.xz
+        sha256: b487c444415789a8b25b3a6542afa668a6b6d6067c648626f323884443f7b70d
         strip-components: 0
 
     buildsystem: simple
     build-commands:
       - |
         mkdir -p ${FLATPAK_DEST}/share/wine/mono/          # Make direcory path for Wine Mono
-        cp -a wine-mono-* ${FLATPAK_DEST}/share/wine/mono/ # Copy/Install Wine Mono keeping file permissions the same
+        cp -a wine-mono-* ${FLATPAK_DEST}/share/wine/mono/ # Copy Wine Mono keeping file permissions the same
+
+  # Vulkan based D3D8, 9, 10, and 11 replacement dlls
+  # Note: This module just places the DXVK dlls in ${FLATPAK_DEST}/share/dxvk/ and child apps will have to copy/replace the default Wine dlls with these to make use of DXVK
+  - name: DXVK
+    sources:
+      - type: archive
+        url: https://github.com/doitsujin/dxvk/releases/download/v2.6/dxvk-2.6.tar.gz
+        sha256: 0d762c33869c46aa85ad563057a9cbe0a247cd5a7d1209e484bdbe7335c77f01
+
+    buildsystem: simple
+    build-commands:
+      - |
+        mkdir -p ${FLATPAK_DEST}/lib/x86_64-linux-gnu/wine # Make direcory path for DXVK
+        cp -a x32 ${FLATPAK_DEST}/lib/x86_64-linux-gnu/wine # Copy 32bit DXVK keeping file permissions the same
+        cp -a x64 ${FLATPAK_DEST}/lib/x86_64-linux-gnu/wine # Copy 64bit DXVK keeping file permissions the same
+
+        # mkdir -p ${FLATPAK_DEST}/share/dxvk/  # Make direcory path for DXVK
+        # cp -a x32 ${FLATPAK_DEST}/share/dxvk/ # Copy 32bit DXVK keeping file permissions the same
+        # cp -a x64 ${FLATPAK_DEST}/share/dxvk/ # Copy 64bit DXVK keeping file permissions the same
