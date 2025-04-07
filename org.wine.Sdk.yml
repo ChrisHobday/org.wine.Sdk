@@ -198,10 +198,6 @@ modules:
     buildsystem: simple
     build-commands:
       - |
-        mkdir -p ${FLATPAK_DEST}/lib/x86_64-linux-gnu/wine # Make direcory path for DXVK
-        cp -a x32 ${FLATPAK_DEST}/lib/x86_64-linux-gnu/wine # Copy 32bit DXVK keeping file permissions the same
-        cp -a x64 ${FLATPAK_DEST}/lib/x86_64-linux-gnu/wine # Copy 64bit DXVK keeping file permissions the same
-
-        # mkdir -p ${FLATPAK_DEST}/share/dxvk/  # Make direcory path for DXVK
-        # cp -a x32 ${FLATPAK_DEST}/share/dxvk/ # Copy 32bit DXVK keeping file permissions the same
-        # cp -a x64 ${FLATPAK_DEST}/share/dxvk/ # Copy 64bit DXVK keeping file permissions the same
+        mkdir -p ${FLATPAK_DEST}/share/dxvk/  # Make direcory path for DXVK
+        cp -a x32 ${FLATPAK_DEST}/share/dxvk/ # Copy 32bit DXVK keeping file permissions the same
+        cp -a x64 ${FLATPAK_DEST}/share/dxvk/ # Copy 64bit DXVK keeping file permissions the same
