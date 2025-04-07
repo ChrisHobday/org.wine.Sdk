@@ -171,7 +171,7 @@ modules:
     buildsystem: simple
     build-commands:
       - |
-        install -Dm755 wine-gecko-*.msi -t ${FLATPAK_DEST}/share/wine/gecko/    # Install 32bit and 64bit Wine Gecko
+        install -Dm755 wine-gecko-*.msi -t ${FLATPAK_DEST}/share/wine/gecko/ # Install 32bit and 64bit Wine Gecko
 
   # Wine addon that replaces the default .NET framework
   - name: WineMono
@@ -188,12 +188,20 @@ modules:
         cp -a wine-mono-* ${FLATPAK_DEST}/share/wine/mono/ # Copy Wine Mono keeping file permissions the same
 
   # Vulkan based D3D8, 9, 10, and 11 replacement dlls
-  # Note: This module just places the DXVK dlls in ${FLATPAK_DEST}/share/dxvk/ and child apps will have to copy/replace the default Wine dlls with these to make use of DXVK
+  # Note: This module just places the DXVK dlls in ${FLATPAK_DEST}/share/dxvk/ and child Apps will have to copy/replace the default Wine dlls with these to make use of DXVK
   - name: DXVK
     sources:
       - type: archive
         url: https://github.com/doitsujin/dxvk/releases/download/v2.6/dxvk-2.6.tar.gz
         sha256: 0d762c33869c46aa85ad563057a9cbe0a247cd5a7d1209e484bdbe7335c77f01
+
+      # Script that switches a Wine prefix to DXVK dlls from the default Wine dlls (Optionally ran by child Apps to update their already initialized Wine prefix)
+      - type: file
+        path: Scripts/DXVKToWine.sh
+
+      # Script that switches a Wine prefix to the default Wine dlls from DXVK dlls (Optionally ran by child Apps to update their already initialized Wine prefix)
+      - type: file
+        path: Scripts/WineToDXVK.sh
 
     buildsystem: simple
     build-commands:
@@ -201,3 +209,6 @@ modules:
         mkdir -p ${FLATPAK_DEST}/share/dxvk/  # Make direcory path for DXVK
         cp -a x32 ${FLATPAK_DEST}/share/dxvk/ # Copy 32bit DXVK keeping file permissions the same
         cp -a x64 ${FLATPAK_DEST}/share/dxvk/ # Copy 64bit DXVK keeping file permissions the same
+
+        install -Dm755 DXVKToWine.sh -t ${FLATPAK_DEST}/bin/ # Install script for switching Wine prefix to DXVK
+        install -Dm755 WineToDXVK.sh -t ${FLATPAK_DEST}/bin/ # Install script for switching Wine prefix to default Wine dlls
