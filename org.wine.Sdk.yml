@@ -130,29 +130,33 @@ modules:
   #       tag: v2024.10.24
   #   buildsystem: cmake
 
-  - name: Libpcap
-    sources:
-      - type: git
-        url: https://github.com/the-tcpdump-group/libpcap
-        tag: libpcap-1.10.5
-    buildsystem: cmake
+  # - name: Libpcap
+  #   sources:
+  #     - type: git
+  #       url: https://github.com/the-tcpdump-group/libpcap
+  #       tag: libpcap-1.10.5
+  #   buildsystem: cmake
   
-  - name: Libpcap32
-    build-options:
-      arch:
-        x86_64: *compat_i386_opts
-    sources:
-      - type: git
-        url: https://github.com/the-tcpdump-group/libpcap
-        tag: libpcap-1.10.5
-    buildsystem: cmake
-        
+  # - name: Libpcap32
+  #   build-options:
+  #     arch:
+  #       x86_64: *compat_i386_opts
+  #   sources:
+  #     - type: git
+  #       url: https://github.com/the-tcpdump-group/libpcap
+  #       tag: libpcap-1.10.5
+  #   buildsystem: cmake
 
   - name: Wine
     sources:
       - type: git
         url: https://gitlab.winehq.org/wine/wine
         tag: wine-10.5
+
+      - type: git
+        url: https://gitlab.winehq.org/wine/wine-staging
+        tag: v10.5
+        dest: WineStaging
 
       - type: file
         path: org.wine.Sdk.metainfo.xml
@@ -169,6 +173,8 @@ modules:
 
     build-commands:
       - |
+        WineStaging/staging/patchinstall.py DESTDIR="./" --all   # Apply Wine Staging patches to Wine before building
+
         mkdir wine64                                 # Make directory for building 64bit Wine
         mkdir wine32                                 # Make directory for building 32bit Wine
 
