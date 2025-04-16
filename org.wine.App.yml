@@ -33,17 +33,23 @@ inherit-extensions:
   - org.freedesktop.Platform.ffmpeg_full.i386  # 32bit FFmpeg
 
 cleanup-commands:
-  # Make directories needed by extensions
-  - mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu                        # 32bit Linux compatibility
-  - mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu              # 32bit Linux compatibility debug
-  - mkdir -p ${FLATPAK_DEST}/lib/x86_64-linux-gnu/GL                   # OpenGL
-  - mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu/GL                     # 32bit OpenGL
-  - mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu/GL           # 32bit OpenGL Debug
-  - mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu/dri/intel-vaapi-driver # 32bit Intel VAAPI
-  - mkdir -p ${FLATPAK_DEST}/lib/ffmpeg                                # FFmpeg
-  - mkdir -p ${FLATPAK_DEST}/lib32/ffmpeg                              # 32bit FFmpeg
 
 modules:
+  # Setting up required stuff
+  - name: Setup
+    buildsystem: simple
+    build-commands:
+      - |
+        # Make directories needed by extensions
+        mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu                        # 32bit Linux compatibility
+        mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu              # 32bit Linux compatibility debug
+        mkdir -p ${FLATPAK_DEST}/lib/x86_64-linux-gnu/GL                   # OpenGL
+        mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu/GL                     # 32bit OpenGL
+        mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu/GL           # 32bit OpenGL Debug
+        mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu/dri/intel-vaapi-driver # 32bit Intel VAAPI
+        mkdir -p ${FLATPAK_DEST}/lib/ffmpeg                                # FFmpeg
+        mkdir -p ${FLATPAK_DEST}/lib32/ffmpeg                              # 32bit FFmpeg
+
   - name: App
     sources:
       - type: git

@@ -94,16 +94,16 @@ add-extensions:
 # cleanup-platform-commands:
   # - /usr/libexec/freedesktop-post.sh # Pre-packaged script that sets up stuff (Not sure if still required)
 
-x-compat-i386-opts: &compat_i386_opts
-  prepend-pkg-config-path: /usr/lib32/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig
-  # Some autotools-based builds will fail if -L/usr/lib32 isn't first
-  # ldflags: -L/usr/lib32 -Wl,-rpath-link=/usr/lib32 -Wl,-z,relro,-z,now -Wl,--as-needed
-  # ldflags-override: true
-  append-path: /usr/lib/sdk/toolchain-i386/bin
-  env:
-    CC: ccache i686-unknown-linux-gnu-gcc
-    CXX: ccache i686-unknown-linux-gnu-g++
-  # libdir: /usr/lib32
+# x-compat-i386-opts: &compat_i386_opts
+#   prepend-pkg-config-path: /usr/lib32/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig
+#   Some autotools-based builds will fail if -L/usr/lib32 isn't first
+#   ldflags: -L/usr/lib32 -Wl,-rpath-link=/usr/lib32 -Wl,-z,relro,-z,now -Wl,--as-needed
+#   ldflags-override: true
+#   append-path: /usr/lib/sdk/toolchain-i386/bin
+#   env:
+#     CC: ccache i686-unknown-linux-gnu-gcc
+#     CXX: ccache i686-unknown-linux-gnu-g++
+#   libdir: /usr/lib32
 
 modules:
   # Setting up required stuff
@@ -169,14 +169,14 @@ modules:
       arch:
         x86_64:
           append-path: /usr/lib/sdk/mingw-w64/bin:/usr/lib/sdk/toolchain-i386/bin         # /usr/lib/sdk/mingw-w64/bin contains x86_64-w64-mingw32-gcc and i686-w64-minigw32-gcc compilers from sdk-extension org.freedesktop.Sdk.Extension.mingw-w64, and /usr/lib/sdk/toolchain-i386/bin contains gnu 32bit libs (needed for building the 32bit version of Wine) from org.freedesktop.Sdk.Extension.toolchain-i386
-          prepend-pkg-config-path: /usr/lib32/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig # Needed for 32bit glib-2.0 optional Wine dependency 
+          # prepend-pkg-config-path: /usr/lib32/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig # Needed for 32bit glib-2.0 optional Wine dependency (This might cause Wine binaries to not get installed in the correct path /usr/bin)
 
     build-commands:
       - |
-        WineStaging/staging/patchinstall.py DESTDIR="./" --all   # Apply Wine Staging patches to Wine before building
+        WineStaging/staging/patchinstall.py DESTDIR="./" --all # Apply Wine Staging patches to Wine before building
 
-        mkdir wine64                                 # Make directory for building 64bit Wine
-        mkdir wine32                                 # Make directory for building 32bit Wine
+        mkdir wine64 # Make directory for building 64bit Wine
+        mkdir wine32 # Make directory for building 32bit Wine
 
         cd wine64
         ../configure                                `# Run Wine configure file to generate makefile with following flags` \
@@ -189,9 +189,8 @@ modules:
           CC="ccache gcc"                           `# Compile C with GCC using ccache` \
           CXX="ccache g++"                          `# Compile C++ with G++ using ccache` \
           x86_64_CC="ccache x86_64-w64-mingw32-gcc" `# Cross-compile C with x86_64-w64-mingw32-gcc using ccache`
-        # make -j`nproc --ignore=2`                    # Build 64bit Wine using number of available cores minus 2
-        # mkdir -p /usr/share/runtime/docs/man         # /usr/share/man symlinks here but it is not created by default and causes an error when make installing if not created beforehand
-        # make install
+        make -j`nproc --ignore=2`                    # Build 64bit Wine using number of available cores minus 2
+        make install
 
         cd ../wine32
         ../configure                                `# Run Wine configure file to generate makefile with following flags` \
@@ -204,43 +203,42 @@ modules:
           CC="ccache i686-unknown-linux-gnu-gcc"    `# Compile C with GCC using ccache` \
           CXX="ccache i686-unknown-linux-gnu-g++"   `# Compile C++ with G++ using ccache` \
           x86_64_CC="ccache i686-w64-mingw32-gcc"   `# Cross-compile C with x86_64-w64-mingw32-gcc using ccache`
-        # make -j`nproc --ignore=2`                    # Build 32bit Wine using number of available cores minus 2
-        # make install
+        make -j`nproc --ignore=2`                    # Build 32bit Wine using number of available cores minus 2
+        make install
 
-        # cd ..
-        # install -Dm644 org.wine.Sdk.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo/      # Install SDK metainfo
-        # install -Dm644 org.wine.Platform.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo/ # Install Platform metainfo
-        echo "a"
+        cd ..
+        install -Dm644 org.wine.Sdk.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo/      # Install SDK metainfo
+        install -Dm644 org.wine.Platform.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo/ # Install Platform metainfo
 
-  # # Wine addon that allows opening website content
-  # - name: WineGecko
-  #   sources:
-  #     - type: file
-  #       url: https://dl.winehq.org/wine/wine-gecko/2.47.4/wine-gecko-2.47.4-x86.msi
-  #       sha256: 26cecc47706b091908f7f814bddb074c61beb8063318e9efc5a7f789857793d6
+  # Wine addon that allows opening website content
+  - name: WineGecko
+    sources:
+      - type: file
+        url: https://dl.winehq.org/wine/wine-gecko/2.47.4/wine-gecko-2.47.4-x86.msi
+        sha256: 26cecc47706b091908f7f814bddb074c61beb8063318e9efc5a7f789857793d6
 
-  #     - type: file
-  #       url: https://dl.winehq.org/wine/wine-gecko/2.47.4/wine-gecko-2.47.4-x86_64.msi
-  #       sha256: e590b7d988a32d6aa4cf1d8aa3aa3d33766fdd4cf4c89c2dcc2095ecb28d066f
+      - type: file
+        url: https://dl.winehq.org/wine/wine-gecko/2.47.4/wine-gecko-2.47.4-x86_64.msi
+        sha256: e590b7d988a32d6aa4cf1d8aa3aa3d33766fdd4cf4c89c2dcc2095ecb28d066f
 
-  #   buildsystem: simple
-  #   build-commands:
-  #     - |
-  #       install -Dm755 wine-gecko-*.msi -t ${FLATPAK_DEST}/share/wine/gecko/ # Install 32bit and 64bit Wine Gecko
+    buildsystem: simple
+    build-commands:
+      - |
+        install -Dm755 wine-gecko-*.msi -t ${FLATPAK_DEST}/share/wine/gecko/ # Install 32bit and 64bit Wine Gecko
 
-  # # Wine addon that replaces the default .NET framework
-  # - name: WineMono
-  #   sources:
-  #     - type: archive
-  #       url: https://dl.winehq.org/wine/wine-mono/10.0.0/wine-mono-10.0.0-x86.tar.xz
-  #       sha256: b487c444415789a8b25b3a6542afa668a6b6d6067c648626f323884443f7b70d
-  #       strip-components: 0
+  # Wine addon that replaces the default .NET framework
+  - name: WineMono
+    sources:
+      - type: archive
+        url: https://dl.winehq.org/wine/wine-mono/10.0.0/wine-mono-10.0.0-x86.tar.xz
+        sha256: b487c444415789a8b25b3a6542afa668a6b6d6067c648626f323884443f7b70d
+        strip-components: 0
 
-  #   buildsystem: simple
-  #   build-commands:
-  #     - |
-  #       mkdir -p ${FLATPAK_DEST}/share/wine/mono/          # Make direcory path for Wine Mono
-  #       cp -a wine-mono-* ${FLATPAK_DEST}/share/wine/mono/ # Copy Wine Mono keeping file permissions the same
+    buildsystem: simple
+    build-commands:
+      - |
+        mkdir -p ${FLATPAK_DEST}/share/wine/mono/          # Make direcory path for Wine Mono
+        cp -a wine-mono-* ${FLATPAK_DEST}/share/wine/mono/ # Copy Wine Mono keeping file permissions the same
 
   # # Vulkan based D3D8, 9, 10, and 11 replacement dlls
   # # Note: This module just places the DXVK dlls in ${FLATPAK_DEST}/share/dxvk/ and child Apps will have to copy/replace the default Wine dlls with these to make use of DXVK
