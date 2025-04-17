@@ -4,17 +4,20 @@ sdk: org.wine.Sdk
 runtime: org.wine.Platform
 runtime-version: '10.5'
 finish-args:
-  - --allow=multiarch                                      # Access to 32bit libraries (for running 32bit executables)
+  - --allow=multiarch                                      # Access to 32bit libraries (For running 32bit executables)
+  # - --allow=devel                                          # Uses full SDK as the runtime (Access to more debugging tools and other libs)
+  # - --allow=bluetooth                                      # Access to bluetooth
   # - --device=all                                           # Access to all devices
   - --device=dri                                           # Access to DRI for OpenGL rendering
   - --device=input                                         # Access to input devices (Controllers, etc)
   # - --socket=wayland                                       # Access to Wayland socket for display
-  - --socket=fallback-x11                                  # Access to X11 socket for display (incase wayland doesn't work)
+  - --socket=fallback-x11                                  # Access to X11 socket for display (Incase wayland doesn't work)
   - --socket=pulseaudio                                    # Access to pulse audio socket for sound
-  # - --allow=bluetooth                                      # Access to bluetooth
   - --share=network                                        # Access to networking
   - --share=ipc                                            # Access to host IPC namespace
   - --talk-name=org.freedesktop.ScreenSaver                # Can talk to Screensaver (Allows preventing Screensaver)
+  # - --system-talk-name=org.freedesktop.UDisks2             # Can manage storage devices directly
+  # - --system-talk-name=org.freedesktop.NetworkManager      # Can manage network directly
   # - --filesystem=host:ro                                   # Read access to common host directories
   - --filesystem=xdg-run/app/com.discordapp.Discord:create # Read/write access to Discord's running instance (Required for setting up Discord rich presence)
   - --filesystem=xdg-run/gamescope-0:ro                    # Read access to Gamescope's running instance (Required for Gamescope on Steam Deck)
