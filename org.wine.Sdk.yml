@@ -228,7 +228,7 @@ modules:
         x-checker-data:
           type: html
           url: https://gitlab.winehq.org/wine/wine/-/raw/master/dlls/appwiz.cpl/addons.c           # Use this file to...
-          version-pattern: GECKO_VERSION\s+"([0-9]+\.[0-9]+\.[0-9]+)"                              # Search for this regex pattern
+          version-pattern: GECKO_VERSION\s+"(\d[\d\.]+\d)"                              # Search for this regex pattern
           url-template: https://dl.winehq.org/wine/wine-gecko/$version/wine-gecko-$version-x86.msi # Compare this file (found using regex match from above) to the source to see if there is a newer version
 
       - type: file
@@ -238,7 +238,7 @@ modules:
         x-checker-data:
           type: html
           url: https://gitlab.winehq.org/wine/wine/-/raw/master/dlls/appwiz.cpl/addons.c              # Use this file to...
-          version-pattern: GECKO_VERSION\s+"([0-9]+\.[0-9]+\.[0-9]+)"                                 # Search for this regex pattern
+          version-pattern: GECKO_VERSION\s+"(\d[\d\.]+\d)"                                 # Search for this regex pattern
           url-template: https://dl.winehq.org/wine/wine-gecko/$version/wine-gecko-$version-x86_64.msi # Compare this file (found using regex match from above) to the source to see if there is a newer version
 
     buildsystem: simple
@@ -253,6 +253,11 @@ modules:
         url: https://dl.winehq.org/wine/wine-mono/10.0.0/wine-mono-10.0.0-x86.tar.xz
         sha256: b487c444415789a8b25b3a6542afa668a6b6d6067c648626f323884443f7b70d
         strip-components: 0
+        x-checker-data:
+          type: html
+          url: https://gitlab.winehq.org/wine/wine/-/raw/master/dlls/appwiz.cpl/addons.c
+          version-pattern: MONO_VERSION\s+"(\d[\d\.]+\d)"
+          url-template: https://dl.winehq.org/wine/wine-mono/$version/wine-mono-$version-x86.tar.xz
 
     buildsystem: simple
     build-commands:
