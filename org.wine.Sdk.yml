@@ -155,7 +155,7 @@ modules:
         tag: wine-10.5
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
-          tag-pattern: (wine-[0-9]+\.[0-9]+)
+          tag-pattern: (wine-\d+\.\d+)
           is-main-source: true
 
       - type: git
@@ -163,7 +163,7 @@ modules:
         tag: v10.5
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
-          tag-pattern: (v[0-9]+\.[0-9]+)
+          tag-pattern: (v\d+\.\d+)
         dest: WineStaging
 
       - type: file
@@ -225,20 +225,20 @@ modules:
         url: https://dl.winehq.org/wine/wine-gecko/2.47.4/wine-gecko-2.47.4-x86.msi
         sha256: 26cecc47706b091908f7f814bddb074c61beb8063318e9efc5a7f789857793d6
         # TODO: Keeps tabs that the URL below is good for getting the correct latest version (URL below uses the master version of Wine not the specific version used above and could possibly update Wine Gecko to a newer version before the used Wine version is ready)
-        x-checker-data:
+        x-checker-data:                                                                            # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: html
           url: https://gitlab.winehq.org/wine/wine/-/raw/master/dlls/appwiz.cpl/addons.c           # Use this file to...
-          version-pattern: GECKO_VERSION\s+"(\d[\d\.]+\d)"                              # Search for this regex pattern
+          version-pattern: GECKO_VERSION\s+"(\d[\d\.]+\d)"                                         # Search for this regex pattern
           url-template: https://dl.winehq.org/wine/wine-gecko/$version/wine-gecko-$version-x86.msi # Compare this file (found using regex match from above) to the source to see if there is a newer version
 
       - type: file
         url: https://dl.winehq.org/wine/wine-gecko/2.47.4/wine-gecko-2.47.4-x86_64.msi
         sha256: e590b7d988a32d6aa4cf1d8aa3aa3d33766fdd4cf4c89c2dcc2095ecb28d066f
         # TODO: Keeps tabs that the URL below is good for getting the correct latest version (URL below uses the master version of Wine not the specific version used above and could possibly update Wine Gecko to a newer version before the used Wine version is ready)
-        x-checker-data:
+        x-checker-data:                                                                               # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: html
           url: https://gitlab.winehq.org/wine/wine/-/raw/master/dlls/appwiz.cpl/addons.c              # Use this file to...
-          version-pattern: GECKO_VERSION\s+"(\d[\d\.]+\d)"                                 # Search for this regex pattern
+          version-pattern: GECKO_VERSION\s+"(\d[\d\.]+\d)"                                            # Search for this regex pattern
           url-template: https://dl.winehq.org/wine/wine-gecko/$version/wine-gecko-$version-x86_64.msi # Compare this file (found using regex match from above) to the source to see if there is a newer version
 
     buildsystem: simple
@@ -253,11 +253,12 @@ modules:
         url: https://dl.winehq.org/wine/wine-mono/10.0.0/wine-mono-10.0.0-x86.tar.xz
         sha256: b487c444415789a8b25b3a6542afa668a6b6d6067c648626f323884443f7b70d
         strip-components: 0
-        x-checker-data:
+        # TODO: Keeps tabs that the URL below is good for getting the correct latest version (URL below uses the master version of Wine not the specific version used above and could possibly update Wine Mono to a newer version before the used Wine version is ready)
+        x-checker-data:                                                                             # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: html
-          url: https://gitlab.winehq.org/wine/wine/-/raw/master/dlls/appwiz.cpl/addons.c
-          version-pattern: MONO_VERSION\s+"(\d[\d\.]+\d)"
-          url-template: https://dl.winehq.org/wine/wine-mono/$version/wine-mono-$version-x86.tar.xz
+          url: https://gitlab.winehq.org/wine/wine/-/raw/master/dlls/appwiz.cpl/addons.c            # Use this file to...
+          version-pattern: MONO_VERSION\s+"(\d[\d\.]+\d)"                                           # Search for this regex pattern
+          url-template: https://dl.winehq.org/wine/wine-mono/$version/wine-mono-$version-x86.tar.xz # Compare this file (found using regex match from above) to the source to see if there is a newer version
 
     buildsystem: simple
     build-commands:
