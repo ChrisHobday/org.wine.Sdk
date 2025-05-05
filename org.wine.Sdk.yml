@@ -1,13 +1,13 @@
 build-runtime: true
 id: org.wine.Sdk
 id-platform: org.wine.Platform
-branch: &app-version '10.6'
+branch: &app-version '10.7'
 sdk: org.freedesktop.Sdk
 runtime: org.freedesktop.Platform
 runtime-version: &runtime-version '24.08'
 finish-args:
-  - --sdk=org.wine.Sdk//10.6
-  - --runtime=org.wine.Platform//10.6
+  - --sdk=org.wine.Sdk//10.7
+  - --runtime=org.wine.Platform//10.7
 
 sdk-extensions:
   # - org.freedesktop.Sdk.Debug
@@ -141,7 +141,7 @@ modules:
     sources:
       - type: git
         url: https://gitlab.winehq.org/wine/wine
-        tag: wine-10.6
+        tag: wine-10.7
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
           tag-pattern: (wine-\d+\.\d+) # Regex pattern that matches latest git tag and compares it to source
@@ -149,7 +149,7 @@ modules:
 
       - type: git
         url: https://gitlab.winehq.org/wine/wine-staging
-        tag: v10.6
+        tag: v10.7
         dest: WineStaging
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
