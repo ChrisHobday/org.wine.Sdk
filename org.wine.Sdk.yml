@@ -142,19 +142,21 @@ modules:
       - type: git
         url: https://gitlab.winehq.org/wine/wine
         tag: wine-10.7
+        commit: 71c6c3dd6dcfffc040aa5a10a825eeb8e17f6299
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
-          tag-pattern: (wine-\d+\.\d+) # Regex pattern that matches latest git tag and compares it to source
+          tag-pattern: ^wine-(\d+\.\d+)$ # Regex pattern that matches latest git tag and compares it to source
           is-main-source: true
 
       - type: git
         url: https://gitlab.winehq.org/wine/wine-staging
         tag: v10.7
+        commit: edfe4935ff2351bd90d4acb03ff6482c02556024
         dest: WineStaging
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
-          tag-pattern: (v\d+\.\d+) # Regex pattern that matches latest git tag and compares it to source
-
+          tag-pattern: ^v(\d+\.\d+)$ # Regex pattern that matches latest git tag and compares it to source
+          
       - type: file
         path: org.wine.Sdk.metainfo.xml
 
