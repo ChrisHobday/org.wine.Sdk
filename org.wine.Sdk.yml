@@ -29,6 +29,7 @@ inherit-extensions:
   - org.freedesktop.Platform.GStreamer
   - org.freedesktop.Platform.openh264
   - org.freedesktop.Platform.Icontheme
+
 # inherit-sdk-extensions:
   # - org.freedesktop.Sdk.Extension
 
@@ -100,7 +101,6 @@ modules:
     buildsystem: simple
     build-commands:
       - |
-      
         # Make directories needed by extensions
         mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu              # 32bit Linux compatibility
         mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu    # 32bit Linux compatibility debug
@@ -141,7 +141,7 @@ modules:
     sources:
       - type: git
         url: https://gitlab.winehq.org/wine/wine
-        tag: wine-10.7
+        tag: 'wine-10.7'
         commit: 71c6c3dd6dcfffc040aa5a10a825eeb8e17f6299
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
@@ -150,7 +150,7 @@ modules:
 
       - type: git
         url: https://gitlab.winehq.org/wine/wine-staging
-        tag: v10.7
+        tag: 'v10.7'
         commit: edfe4935ff2351bd90d4acb03ff6482c02556024
         dest: WineStaging
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
@@ -260,6 +260,22 @@ modules:
       - |
         mkdir -p ${FLATPAK_DEST}/share/wine/mono/          # Make direcory path for Wine Mono
         cp -a wine-mono-* ${FLATPAK_DEST}/share/wine/mono/ # Copy Wine Mono directory keeping file permissions the same
+
+  # Tool that helps download and install various libraries, fonts, etc into a Wine prefix
+  - name: WineTricks
+    sources:
+      - type: git
+        url: https://github.com/Winetricks/winetricks
+        tag: '20250102'
+        commit: e20b2f6f80d175f96208f51800130db7459dd28c
+        x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+          type: git
+          tag-pattern: ^(\d+)$ # Regex pattern that matches latest git tag and compares it to source
+
+    buildsystem: simple
+    build-commands:
+      - |
+        make install
 
   # # Vulkan based D3D8, 9, 10, and 11 replacement dlls
   # # Note: This module just places the DXVK dlls in ${FLATPAK_DEST}/share/dxvk/ and child Apps will have to copy/replace the default Wine dlls with these to make use of DXVK

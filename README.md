@@ -12,8 +12,8 @@ flatpak install --user ./repo org.wine.Sdk org.wine.Platform
 ```console
 flatpak remove org.wine.Platform org.wine.Sdk
 ```
-## Checking External Data
+## Updating External Data
 > **_NOTE:_**  With org.flathub.flatpak-external-data-checker installed.
 ```console
-flatpak run org.flathub.flatpak-external-data-checker ./org.wine.Sdk.yml
+flatpak run org.flathub.flatpak-external-data-checker --update ./org.wine.Sdk.yml
 ```
