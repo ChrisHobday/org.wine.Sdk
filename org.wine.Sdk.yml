@@ -8,6 +8,7 @@ runtime-version: &runtime-version '24.08'
 finish-args:
   - --sdk=org.wine.Sdk//10.7
   - --runtime=org.wine.Platform//10.7
+  - --socket=pcsc # Child apps will need to enable this to access smartcards
 
 sdk-extensions:
   # - org.freedesktop.Sdk.Debug
@@ -141,7 +142,6 @@ modules:
   #     - type: git
   #       url: https://github.com/KhronosGroup/OpenCL-SDK
   #       tag: v2024.10.24
-  #   buildsystem: cmake
 
   # Library for handling network traffic/packet capture (Optional Wine dependency)
   - name: Libpcap
@@ -153,33 +153,32 @@ modules:
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
           tag-pattern: ^libpcap-(\d[\d\.]+\d)$ # Regex pattern that matches latest git tag and compares it to source
-    buildsystem: cmake
   
   - name: Libpcap32
     sources: *libpcap-sources # Reuse &libpcap-sources anchor from above
     build-options:
       arch:
         x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
-    buildsystem: cmake
 
-  # TODO: Figure out a way to get Libpcsclite working (Complains about missing systemd dependency)
   # Middleware to access smart cards (Optional Wine dependency)
-  # - name: Libpcsclite
-  #   config-opts: &libpcsclite-config-opts
-  #     - -Dpolkit=false # Disable polkit dependency
-  #   sources: &libpcsclite-sources
-  #     - type: archive
-  #       url: https://pcsclite.apdu.fr/files/pcsc-lite-2.3.2.tar.xz
-  #       sha256: 5ac5091d444653c5f63add9c6c39a777c11c5f3513491639c0f3385ccb41496d
-  #   buildsystem: meson
+  - name: Libpcsclite
+    config-opts: &libpcsclite-config-opts
+      - --disable-polkit # Disable polkit dependency
+    sources: &libpcsclite-sources
+      - type: archive
+        url: https://pcsclite.apdu.fr/files/pcsc-lite-2.3.2.tar.xz
+        sha256: 5ac5091d444653c5f63add9c6c39a777c11c5f3513491639c0f3385ccb41496d
+        x-checker-data:                                                                             # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+          type: html
+          url: https://pcsclite.apdu.fr/files/                                                      # Use this file to...
+          pattern: (pcsc-lite-(\d[\d\.]+\d).tar.xz)
 
-  # - name: Libpcsclite32
-  #   build-options:
-  #     arch:
-  #       x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
-  #   config-opts: *libpcsclite-config-opts # Reuse &libpcsclite-config-opts anchor from above
-  #   sources: *libpcsclite-sources         # Reuse &libpcsclite-sources anchor from above
-  #   buildsystem: meson
+  - name: Libpcsclite32
+    config-opts: *libpcsclite-config-opts # Reuse &libpcsclite-config-opts anchor from above
+    build-options:
+      arch:
+        x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
+    sources: *libpcsclite-sources         # Reuse &libpcsclite-sources anchor from above
 
   # This module builds both Wine64 and Wine32 (needed for WoW64 Wine mode) and so looks much different then other modules that build 64/32bit versions seperately and does not use any YAML compat anchors from above
   - name: Wine
