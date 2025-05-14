@@ -18,7 +18,7 @@ sdk-extensions:
   - org.freedesktop.Sdk.Extension.mingw-w64      # Needed for cross-compiling 32/64bit Wine (Compiling Wine Windows dlls)
 
 # platform-extensions:
-  # - org.freedesktop.Platform.Locale
+#   - org.freedesktop.Platform.Locale
 
 inherit-extensions:
   # Re-export org.freedesktop.Platform extensions for child Apps to inherit
@@ -31,7 +31,7 @@ inherit-extensions:
   - org.freedesktop.Platform.Icontheme
 
 # inherit-sdk-extensions:
-  # - org.freedesktop.Sdk.Extension
+#   - org.freedesktop.Sdk.Extension
 
 add-extensions:
   # Re-export org.freedesktop.Platform extensions for child Apps to inherit
@@ -90,22 +90,21 @@ add-extensions:
     autodelete: false
 
 # cleanup-commands:
-  # - /usr/libexec/freedesktop-post.sh # Pre-packaged script that sets up stuff (Not sure if still required)
+#   - /usr/libexec/freedesktop-post.sh # Pre-packaged script that sets up stuff (Not sure if still required)
 
 # cleanup-platform-commands:
-  # - /usr/libexec/freedesktop-post.sh # Pre-packaged script that sets up stuff (Not sure if still required)
+#   - /usr/libexec/freedesktop-post.sh # Pre-packaged script that sets up stuff (Not sure if still required)
 
 # YAML Anchor for 32bit build options, to be referred to by 32bit modules below (Avoids needing to rewrite this out for each 32bit module)
 x-compat-i386-build-options: &compat-i386-build-options
-  prepend-pkg-config-path: /usr/lib32/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig # Make sure 32-bit dependencies are first on pkg-config search path
-  # ldflags: -L/usr/lib32                                                           # Add /usr/lib32 to linker search path for modules without pkg-config
-  ldflags: -L/usr/lib/i386-linux-gnu                                                # Add /usr/lib/i386-linux-gnu to linker search path for modules without pkg-config
   prepend-path: /usr/lib/sdk/toolchain-i386/bin                                   # /usr/lib/sdk/toolchain-i386/bin contains gnu 32bit libs needed for compiling
+  prepend-pkg-config-path: /usr/lib32/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig # Make sure 32-bit dependencies are first on pkg-config search path
+  libdir: /usr/lib32                                                              # Install libraries in /usr/lib32
+  ldflags: -L/usr/lib32                                                           # Add /usr/lib32 to linker search path for modules without pkg-config
   env:
     CC: ccache i686-unknown-linux-gnu-gcc  # Compile C with GCC using ccache
     CXX: ccache i686-unknown-linux-gnu-g++ # Compile C++ with G++ using ccache
-  # libdir: /usr/lib32                                                              # Install libraries in /usr/lib32
-  libdir: /usr/lib/i386-linux-gnu                                                 # Install libraries in /usr/lib/i386-linux-gnu
+    x86_64_CC: ccache i686-w64-mingw32-gcc # Cross-compile C with x86_64-w64-mingw32-gcc using ccache
 
 modules:
   # Setting up required stuff
@@ -121,10 +120,12 @@ modules:
         mkdir -p ${FLATPAK_DEST}/lib32/ffmpeg                    # 32bit FFmpeg
 
         # Make directories needed by modules
-        mkdir -p /usr/share/runtime/docs/man                     # /usr/share/man symlinks here but it is not created by default and causes an errors when building modules
+        mkdir -p /usr/share/runtime/docs/man                     # /usr/share/man symlinks here but it is not created by default and can cause errors when building modules
+        mkdir -p /usr/share/runtime/docs/info                    # /usr/share/info symlinks here but it is not created by default and can cause errors when building modules
+        mkdir -p /usr/share/runtime/docs/doc                     # /usr/share/doc symlinks here but it is not created by default and can cause errors when building modules
+        mkdir -p /usr/share/runtime/docs/ri                      # /usr/share/ri symlinks here but it is not created by default and can cause errors when building modules
 
   # TODO: Add module for libOSMesa
-  # TODO: Add module for libpcsclite
   # TODO: Add module for libsane
   # TODO: Add module for libusb
   # TODO: Add module for libgphoto2
@@ -142,11 +143,12 @@ modules:
   #       tag: v2024.10.24
   #   buildsystem: cmake
 
+  # Library for handling network traffic/packet capture (Optional Wine dependency)
   - name: Libpcap
     sources: &libpcap-sources
       - type: git
         url: https://github.com/the-tcpdump-group/libpcap
-        tag: libpcap-1.10.5
+        tag: 'libpcap-1.10.5'
         commit: bbcbc9174df3298a854daee2b3e666a4b6e5383a
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
@@ -154,12 +156,32 @@ modules:
     buildsystem: cmake
   
   - name: Libpcap32
+    sources: *libpcap-sources # Reuse &libpcap-sources anchor from above
     build-options:
       arch:
-        x86_64: *compat-i386-build-options
-    sources: *libpcap-sources # Reused &libpcap-sources anchor from above
+        x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
     buildsystem: cmake
 
+  # TODO: Figure out a way to get Libpcsclite working (Complains about missing systemd dependency)
+  # Middleware to access smart cards (Optional Wine dependency)
+  # - name: Libpcsclite
+  #   config-opts: &libpcsclite-config-opts
+  #     - -Dpolkit=false # Disable polkit dependency
+  #   sources: &libpcsclite-sources
+  #     - type: archive
+  #       url: https://pcsclite.apdu.fr/files/pcsc-lite-2.3.2.tar.xz
+  #       sha256: 5ac5091d444653c5f63add9c6c39a777c11c5f3513491639c0f3385ccb41496d
+  #   buildsystem: meson
+
+  # - name: Libpcsclite32
+  #   build-options:
+  #     arch:
+  #       x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
+  #   config-opts: *libpcsclite-config-opts # Reuse &libpcsclite-config-opts anchor from above
+  #   sources: *libpcsclite-sources         # Reuse &libpcsclite-sources anchor from above
+  #   buildsystem: meson
+
+  # This module builds both Wine64 and Wine32 (needed for WoW64 Wine mode) and so looks much different then other modules that build 64/32bit versions seperately and does not use any YAML compat anchors from above
   - name: Wine
     sources:
       - type: git
@@ -187,14 +209,10 @@ modules:
         path: org.wine.Platform.metainfo.xml
 
     buildsystem: simple
-    build-options:
-      arch:
-        x86_64:
-          append-path: /usr/lib/sdk/mingw-w64/bin:/usr/lib/sdk/toolchain-i386/bin         # /usr/lib/sdk/mingw-w64/bin contains x86_64-w64-mingw32-gcc and i686-w64-minigw32-gcc compilers from sdk-extension org.freedesktop.Sdk.Extension.mingw-w64, and /usr/lib/sdk/toolchain-i386/bin contains gnu 32bit libs (needed for building the 32bit version of Wine) from org.freedesktop.Sdk.Extension.toolchain-i386
-          # prepend-pkg-config-path: /usr/lib32/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig # Needed for 32bit glib-2.0 optional Wine dependency (This might cause Wine binaries to not get installed in the correct path /usr/bin)
-
     build-commands:
       - |
+        PATH=$PATH:/usr/lib/sdk/mingw-w64/bin:/usr/lib/sdk/toolchain-i386/bin # Add to PATH, /usr/lib/sdk/mingw-w64/bin contains x86_64-w64-mingw32-gcc and i686-w64-minigw32-gcc compilers from sdk-extension org.freedesktop.Sdk.Extension.mingw-w64, and /usr/lib/sdk/toolchain-i386/bin contains gnu 32bit libs (needed for building the 32bit version of Wine) from org.freedesktop.Sdk.Extension.toolchain-i386
+
         WineStaging/staging/patchinstall.py DESTDIR="./" --all # Apply Wine Staging patches to Wine before building
 
         mkdir wine64 # Make directory for building 64bit Wine
@@ -211,117 +229,119 @@ modules:
           CC="ccache gcc"                           `# Compile C with GCC using ccache` \
           CXX="ccache g++"                          `# Compile C++ with G++ using ccache` \
           x86_64_CC="ccache x86_64-w64-mingw32-gcc" `# Cross-compile C with x86_64-w64-mingw32-gcc using ccache`
-        # make -j`nproc --ignore=2`                    # Build 64bit Wine using number of available cores minus 2
-        # make install
+        make -j`nproc --ignore=2`                    # Build 64bit Wine using number of available cores minus 2
+        make install
         cd ..
 
         cd wine32
-        ../configure                                `# Generate makefile with following flags` \
-          --prefix=${FLATPAK_DEST}                  `# Set prefix to Flatpak root (/usr for an SDK)` \
-          --with-wine64=../wine64                   `# Use built 64bit Wine above` \
-          --with-x                                  `# Set flag to compile with X11` \
-          --with-wayland                            `# Set flag to compile with Wayland` \
-          --with-pulse                              `# Set flag to compile with Pulse audio` \
-          --with-dbus                               `# Set flag to compile with Dbus` \
-          CC="ccache i686-unknown-linux-gnu-gcc"    `# Compile C with GCC using ccache` \
-          CXX="ccache i686-unknown-linux-gnu-g++"   `# Compile C++ with G++ using ccache` \
-          x86_64_CC="ccache i686-w64-mingw32-gcc"   `# Cross-compile C with x86_64-w64-mingw32-gcc using ccache`
-        # make -j`nproc --ignore=2`                    # Build 32bit Wine using number of available cores minus 2
-        # make install
+        ../configure                                                                              `# Generate makefile with following flags` \
+          --prefix=${FLATPAK_DEST}                                                                `# Set prefix to Flatpak root (/usr for an SDK)` \
+          --with-wine64=../wine64                                                                 `# Use built 64bit Wine above` \
+          --with-x                                                                                `# Set flag to compile with X11` \
+          --with-wayland                                                                          `# Set flag to compile with Wayland` \
+          --with-pulse                                                                            `# Set flag to compile with Pulse audio` \
+          --with-dbus                                                                             `# Set flag to compile with Dbus` \
+          PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/lib32/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig `# Add locations to search for pkgconfig (Needed for optional 32bit glib-2.0 Wine dependency)` \
+          LDFLAGS="-L/usr/lib32"                                                                  `# Add /usr/lib32 to linker search path ` \
+          CC="ccache i686-unknown-linux-gnu-gcc"                                                  `# Compile C with GCC using ccache` \
+          CXX="ccache i686-unknown-linux-gnu-g++"                                                 `# Compile C++ with G++ using ccache` \
+          x86_64_CC="ccache i686-w64-mingw32-gcc"                                                 `# Cross-compile C with x86_64-w64-mingw32-gcc using ccache`
+        make -j`nproc --ignore=2`                                                                  # Build 32bit Wine using number of available cores minus
+        make install
         cd ..
 
         install -Dm644 org.wine.Sdk.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo/      # Install SDK metainfo
         install -Dm644 org.wine.Platform.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo/ # Install Platform metainfo
 
-  # # Wine addon that allows opening website content
-  # - name: WineGecko
-  #   sources:
-  #     - type: archive
-  #       url: https://dl.winehq.org/wine/wine-gecko/2.47.4/wine-gecko-2.47.4-x86.tar.xz
-  #       sha256: 2cfc8d5c948602e21eff8a78613e1826f2d033df9672cace87fed56e8310afb6
-  #       strip-components: 0
-  #       # TODO: Keeps tabs that the URL below is good for getting the correct latest version (URL below uses the master version of Wine not the specific version used above and could possibly update Wine Gecko to a newer version before the used Wine version is ready)
-  #       x-checker-data:                                                                               # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
-  #         type: html
-  #         url: https://gitlab.winehq.org/wine/wine/-/raw/master/dlls/appwiz.cpl/addons.c              # Use this file to...
-  #         version-pattern: GECKO_VERSION\s+"(\d[\d\.]+\d)"                                            # Search for this regex pattern
-  #         url-template: https://dl.winehq.org/wine/wine-gecko/$version/wine-gecko-$version-x86.tar.xz # Compare this file (found using regex match from above) to the source to see if there is a newer version
+  # Wine addon that allows opening website content
+  - name: WineGecko
+    sources:
+      - type: archive
+        url: https://dl.winehq.org/wine/wine-gecko/2.47.4/wine-gecko-2.47.4-x86.tar.xz
+        sha256: 2cfc8d5c948602e21eff8a78613e1826f2d033df9672cace87fed56e8310afb6
+        strip-components: 0
+        # TODO: Keeps tabs that the URL below is good for getting the correct latest version (URL below uses the master version of Wine not the specific version used above and could possibly update Wine Gecko to a newer version before the used Wine version is ready)
+        x-checker-data:                                                                               # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+          type: html
+          url: https://gitlab.winehq.org/wine/wine/-/raw/master/dlls/appwiz.cpl/addons.c              # Use this file to...
+          version-pattern: GECKO_VERSION\s+"(\d[\d\.]+\d)"                                            # Search for this regex pattern
+          url-template: https://dl.winehq.org/wine/wine-gecko/$version/wine-gecko-$version-x86.tar.xz # Compare this file (found using regex match from above) to the source to see if there is a newer version
 
-  #     - type: archive
-  #       url: https://dl.winehq.org/wine/wine-gecko/2.47.4/wine-gecko-2.47.4-x86_64.tar.xz
-  #       sha256: fd88fc7e537d058d7a8abf0c1ebc90c574892a466de86706a26d254710a82814
-  #       strip-components: 0
-  #       # TODO: Keeps tabs that the URL below is good for getting the correct latest version (URL below uses the master version of Wine not the specific version used above and could possibly update Wine Gecko to a newer version before the used Wine version is ready)
-  #       x-checker-data:                                                                                  # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
-  #         type: html
-  #         url: https://gitlab.winehq.org/wine/wine/-/raw/master/dlls/appwiz.cpl/addons.c                 # Use this file to...
-  #         version-pattern: GECKO_VERSION\s+"(\d[\d\.]+\d)"                                               # Search for this regex pattern
-  #         url-template: https://dl.winehq.org/wine/wine-gecko/$version/wine-gecko-$version-x86_64.tar.xz # Compare this file (found using regex match from above) to the source to see if there is a newer version
+      - type: archive
+        url: https://dl.winehq.org/wine/wine-gecko/2.47.4/wine-gecko-2.47.4-x86_64.tar.xz
+        sha256: fd88fc7e537d058d7a8abf0c1ebc90c574892a466de86706a26d254710a82814
+        strip-components: 0
+        # TODO: Keeps tabs that the URL below is good for getting the correct latest version (URL below uses the master version of Wine not the specific version used above and could possibly update Wine Gecko to a newer version before the used Wine version is ready)
+        x-checker-data:                                                                                  # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+          type: html
+          url: https://gitlab.winehq.org/wine/wine/-/raw/master/dlls/appwiz.cpl/addons.c                 # Use this file to...
+          version-pattern: GECKO_VERSION\s+"(\d[\d\.]+\d)"                                               # Search for this regex pattern
+          url-template: https://dl.winehq.org/wine/wine-gecko/$version/wine-gecko-$version-x86_64.tar.xz # Compare this file (found using regex match from above) to the source to see if there is a newer version
 
-  #   buildsystem: simple
-  #   build-commands:
-  #     - |
-  #       mkdir -p ${FLATPAK_DEST}/share/wine/gecko/           # Make direcory path for Wine Gecko
-  #       cp -a wine-gecko-* ${FLATPAK_DEST}/share/wine/gecko/ # Copy Wine Gecko directories keeping file permissions the same
+    buildsystem: simple
+    build-commands:
+      - |
+        mkdir -p ${FLATPAK_DEST}/share/wine/gecko/           # Make direcory path for Wine Gecko
+        cp -a wine-gecko-* ${FLATPAK_DEST}/share/wine/gecko/ # Copy Wine Gecko directories keeping file permissions the same
 
-  # # Wine addon that replaces the default .NET framework
-  # - name: WineMono
-  #   sources:
-  #     - type: archive
-  #       url: https://dl.winehq.org/wine/wine-mono/10.0.0/wine-mono-10.0.0-x86.tar.xz
-  #       sha256: b487c444415789a8b25b3a6542afa668a6b6d6067c648626f323884443f7b70d
-  #       strip-components: 0
-  #       # TODO: Keeps tabs that the URL below is good for getting the correct latest version (URL below uses the master version of Wine not the specific version used above and could possibly update Wine Mono to a newer version before the used Wine version is ready)
-  #       x-checker-data:                                                                             # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
-  #         type: html
-  #         url: https://gitlab.winehq.org/wine/wine/-/raw/master/dlls/appwiz.cpl/addons.c            # Use this file to...
-  #         version-pattern: MONO_VERSION\s+"(\d[\d\.]+\d)"                                           # Search for this regex pattern
-  #         url-template: https://dl.winehq.org/wine/wine-mono/$version/wine-mono-$version-x86.tar.xz # Compare this file (found using regex match from above) to the source to see if there is a newer version
+  # Wine addon that replaces the default .NET framework
+  - name: WineMono
+    sources:
+      - type: archive
+        url: https://dl.winehq.org/wine/wine-mono/10.0.0/wine-mono-10.0.0-x86.tar.xz
+        sha256: b487c444415789a8b25b3a6542afa668a6b6d6067c648626f323884443f7b70d
+        strip-components: 0
+        # TODO: Keeps tabs that the URL below is good for getting the correct latest version (URL below uses the master version of Wine not the specific version used above and could possibly update Wine Mono to a newer version before the used Wine version is ready)
+        x-checker-data:                                                                             # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+          type: html
+          url: https://gitlab.winehq.org/wine/wine/-/raw/master/dlls/appwiz.cpl/addons.c            # Use this file to...
+          version-pattern: MONO_VERSION\s+"(\d[\d\.]+\d)"                                           # Search for this regex pattern
+          url-template: https://dl.winehq.org/wine/wine-mono/$version/wine-mono-$version-x86.tar.xz # Compare this file (found using regex match from above) to the source to see if there is a newer version
 
-  #   buildsystem: simple
-  #   build-commands:
-  #     - |
-  #       mkdir -p ${FLATPAK_DEST}/share/wine/mono/          # Make direcory path for Wine Mono
-  #       cp -a wine-mono-* ${FLATPAK_DEST}/share/wine/mono/ # Copy Wine Mono directory keeping file permissions the same
+    buildsystem: simple
+    build-commands:
+      - |
+        mkdir -p ${FLATPAK_DEST}/share/wine/mono/          # Make direcory path for Wine Mono
+        cp -a wine-mono-* ${FLATPAK_DEST}/share/wine/mono/ # Copy Wine Mono directory keeping file permissions the same
 
-  # # Tool that can be used to help download and install various libraries, fonts, etc into a Wine prefix
-  # - name: WineTricks
-  #   sources:
-  #     - type: git
-  #       url: https://github.com/Winetricks/winetricks.git
-  #       tag: '20250102'
-  #       commit: e20b2f6f80d175f96208f51800130db7459dd28c
-  #       x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
-  #         type: git
-  #         tag-pattern: ^(\d+)$ # Regex pattern that matches latest git tag and compares it to source
+  # Tool that can be used to help download and install various libraries, fonts, etc into a Wine prefix
+  - name: WineTricks
+    sources:
+      - type: git
+        url: https://github.com/Winetricks/winetricks.git
+        tag: '20250102'
+        commit: e20b2f6f80d175f96208f51800130db7459dd28c
+        x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+          type: git
+          tag-pattern: ^(\d+)$ # Regex pattern that matches latest git tag and compares it to source
 
-  #   buildsystem: simple
-  #   build-commands:
-  #     - |
-  #       make install
+    buildsystem: simple
+    build-commands:
+      - |
+        make install
 
-  # # Vulkan based D3D8, 9, 10, and 11 replacement dlls
-  # # Note: This module just places the DXVK dlls in ${FLATPAK_DEST}/share/dxvk/ and child Apps will have to copy/replace the default Wine dlls with these to make use of DXVK
-  # - name: DXVK
-  #   sources:
-  #     - type: archive
-  #       url: https://github.com/doitsujin/dxvk/releases/download/v2.6/dxvk-2.6.tar.gz
-  #       sha256: 0d762c33869c46aa85ad563057a9cbe0a247cd5a7d1209e484bdbe7335c77f01
+  # Vulkan based D3D8, 9, 10, and 11 replacement dlls
+  # Note: This module just places the DXVK dlls in ${FLATPAK_DEST}/share/dxvk/ and child Apps will have to copy/replace the default Wine dlls with these to make use of DXVK
+  - name: DXVK
+    sources:
+      - type: archive
+        url: https://github.com/doitsujin/dxvk/releases/download/v2.6/dxvk-2.6.tar.gz
+        sha256: 0d762c33869c46aa85ad563057a9cbe0a247cd5a7d1209e484bdbe7335c77f01
 
-  #     # Script that switches a Wine prefix to DXVK dlls from the default Wine dlls (Optionally ran by child Apps to update their already initialized Wine prefix)
-  #     - type: file
-  #       path: Scripts/DXVKToWine.sh
+      # Script that switches a Wine prefix to DXVK dlls from the default Wine dlls (Optionally ran by child Apps to update their already initialized Wine prefix)
+      - type: file
+        path: Scripts/DXVKToWine.sh
 
-  #     # Script that switches a Wine prefix to the default Wine dlls from DXVK dlls (Optionally ran by child Apps to update their already initialized Wine prefix)
-  #     - type: file
-  #       path: Scripts/WineToDXVK.sh
+      # Script that switches a Wine prefix to the default Wine dlls from DXVK dlls (Optionally ran by child Apps to update their already initialized Wine prefix)
+      - type: file
+        path: Scripts/WineToDXVK.sh
 
-  #   buildsystem: simple
-  #   build-commands:
-  #     - |
-  #       mkdir -p ${FLATPAK_DEST}/share/dxvk/                 # Make direcory path for DXVK
-  #       cp -a x32 ${FLATPAK_DEST}/share/dxvk/                # Copy 32bit DXVK keeping file permissions the same
-  #       cp -a x64 ${FLATPAK_DEST}/share/dxvk/                # Copy 64bit DXVK keeping file permissions the same
+    buildsystem: simple
+    build-commands:
+      - |
+        mkdir -p ${FLATPAK_DEST}/share/dxvk/                 # Make direcory path for DXVK
+        cp -a x32 ${FLATPAK_DEST}/share/dxvk/                # Copy 32bit DXVK keeping file permissions the same
+        cp -a x64 ${FLATPAK_DEST}/share/dxvk/                # Copy 64bit DXVK keeping file permissions the same
 
-  #       install -Dm755 DXVKToWine.sh -t ${FLATPAK_DEST}/bin/ # Install script for switching Wine prefix to DXVK
-  #       install -Dm755 WineToDXVK.sh -t ${FLATPAK_DEST}/bin/ # Install script for switching Wine prefix to default Wine dlls
+        install -Dm755 DXVKToWine.sh -t ${FLATPAK_DEST}/bin/ # Install script for switching Wine prefix to DXVK
+        install -Dm755 WineToDXVK.sh -t ${FLATPAK_DEST}/bin/ # Install script for switching Wine prefix to default Wine dlls
