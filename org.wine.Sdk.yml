@@ -127,23 +127,24 @@ modules:
         mkdir -p /usr/share/runtime/docs/ri                      # /usr/share/ri symlinks here but it is not created by default and can cause errors when building modules
 
   # TODO: Add module for libOSMesa
-  # TODO: Add module for libsane
-  # TODO: Add module for libusb
-  # TODO: Add module for libgphoto2
-  # TODO: Add module for libgphoto2-port
   # TODO: Add module for OSS
   # TODO: Add module for libcapi20
   # TODO: Add module for libkrb5
   # TODO: Add module for libnetapi
 
-  # TODO: Figure out why there are submodule errors
-  # - name: OpenCL
-  #   sources:
-  #     - type: git
-  #       url: https://github.com/KhronosGroup/OpenCL-SDK
-  #       tag: v2024.10.24
+  # For parallel programming (Optional Wine dependency)
+  - name: OpenCL
+    sources:
+      - type: git
+        url: https://github.com/KhronosGroup/OpenCL-Headers.git
+        tag: v2024.10.24
+        commit: 4ea6df132107e3b4b9407f903204b5522fdffcd6
+        x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+          type: git
+          tag-pattern: ^v(\d[\d\.]+\d)$ # Regex pattern that matches latest git tag and compares it to source
+    buildsystem: cmake
 
-  # Library for handling network traffic/packet capture (Optional Wine dependency)
+  # For handling network traffic/packet capture (Optional Wine dependency)
   - name: Libpcap
     sources: &libpcap-sources
       - type: git
@@ -153,17 +154,15 @@ modules:
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
           tag-pattern: ^libpcap-(\d[\d\.]+\d)$ # Regex pattern that matches latest git tag and compares it to source
-  
-  - name: Libpcap32
+
+  - name: Libpcap-32
     sources: *libpcap-sources # Reuse &libpcap-sources anchor from above
     build-options:
       arch:
         x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
 
-  # Middleware to access smart cards (Optional Wine dependency)
+  # Middleware for access smart cards (Optional Wine dependency)
   - name: Libpcsclite
-    config-opts: &libpcsclite-config-opts
-      - --disable-polkit # Disable polkit dependency
     sources: &libpcsclite-sources
       - type: archive
         url: https://pcsclite.apdu.fr/files/pcsc-lite-2.3.3.tar.xz
@@ -172,13 +171,88 @@ modules:
           type: html
           url: https://pcsclite.apdu.fr/files/                                                      # Use this file to...
           pattern: (pcsc-lite-(\d[\d\.]+\d).tar.xz)                                                 # Search for this regex pattern and compare it to source to see if there is a newer version
+    config-opts: &libpcsclite-config-opts
+      - --disable-polkit # Disable polkit dependency
 
-  - name: Libpcsclite32
+  - name: Libpcsclite-32
+    sources: *libpcsclite-sources         # Reuse &libpcsclite-sources anchor from above
     config-opts: *libpcsclite-config-opts # Reuse &libpcsclite-config-opts anchor from above
     build-options:
       arch:
         x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
-    sources: *libpcsclite-sources         # Reuse &libpcsclite-sources anchor from above
+
+  # For handling scanners (Optional Wine dependency)
+  - name: Libsane
+    sources: &libsane-sources
+      - type: git
+        url: https://gitlab.com/sane-project/backends.git
+        tag: 1.3.1
+        commit: 3ff55fd8ee04ae459e199088ebe11ac979671d0e
+        x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+          type: git
+          tag-pattern: ^(\d[\d\.]+\d)$ # Regex pattern that matches latest git tag and compares it to source
+
+  - name: Libsane-32
+    sources: *libsane-sources
+    build-options:
+      arch:
+        x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
+
+  # For handling USB devices (Optional Wine dependency)
+  - name: Libusb
+    sources: &libusb-sources
+      - type: git
+        url: https://github.com/libusb/libusb.git
+        tag: v1.0.28
+        commit: a61afe5f75d969c4561a1d0ad753aa23cee6329a
+        x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+          type: git
+          tag-pattern: ^v(\d[\d\.]+\d)$ # Regex pattern that matches latest git tag and compares it to source
+
+  - name: Libusb-32
+    sources: *libusb-sources
+    build-options:
+      arch:
+        x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
+
+  # TODO: Add x-checker-data for archived release
+  # For handling digital cameras (Optional Wine dependency)
+  - name: libgphoto2
+    sources: &libgphoto2-sources
+      - type: archive
+        url: https://github.com/gphoto/libgphoto2/releases/download/v2.5.31/libgphoto2-2.5.31.tar.xz
+        sha256: 8fc7bf40f979459509b87dd4ff1aae9b6c1c2b4724d37db576081eec15406ace
+      # - type: git
+      #   url: https://github.com/gphoto/libgphoto2.git
+      #   tag: v2.5.31
+      #   commit: ba28af2d22fd4cb7fa76a8ff569ba498e8021db5
+      #   x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+      #     type: git
+      #     tag-pattern: ^v(\d[\d\.]+\d)$ # Regex pattern that matches latest git tag and compares it to source
+      # Patch that allows building with stricter GCC 14 compiler
+      - type: patch
+        path: Patches/libgphoto-gcc14.patch
+    # buildsystem: simple
+    # build-commands:
+    #   - |
+    #     # autoreconf -is
+    #     ./configure --prefix=${FLATPAK_DEST}
+    #     make
+    #     make install
+
+  # TODO: Figure out why installing this 32bit module overwrites 64bit install above when using the git source (Seems to install into /usr/lib/libgphoto2 even tho compat-i386-build-options specify /usr/lib32)
+  - name: libgphoto2-32
+    sources: *libgphoto2-sources
+    build-options:
+      arch:
+        x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
+    # buildsystem: simple
+    # build-commands:
+    #   - |
+    #     # autoreconf -is
+    #     ./configure --prefix=${FLATPAK_DEST}
+    #     make
+    #     make install
 
   # This module builds both Wine64 and Wine32 (needed for WoW64 Wine mode) and so looks much different then other modules that build 64/32bit versions seperately and does not use any YAML compat anchors from above
   - name: Wine
