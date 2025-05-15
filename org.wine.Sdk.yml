@@ -167,10 +167,10 @@ modules:
       - type: archive
         url: https://pcsclite.apdu.fr/files/pcsc-lite-2.3.3.tar.xz
         sha256: cdff7d7153a0b37aa74e26dfec89ec7dc5c5286aa21b91b903e38739d227e8e7
-        x-checker-data:                                                                             # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+        x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: html
-          url: https://pcsclite.apdu.fr/files/                                                      # Use this file to...
-          pattern: (pcsc-lite-(\d[\d\.]+\d).tar.xz)                                                 # Search for this regex pattern and compare it to source to see if there is a newer version
+          url: https://pcsclite.apdu.fr/files/      # Use this file to...
+          pattern: (pcsc-lite-(\d[\d\.]+\d).tar.xz) # Search for this regex pattern and compare it to source to see if there is a newer version
     config-opts: &libpcsclite-config-opts
       - --disable-polkit # Disable polkit dependency
 
@@ -222,37 +222,20 @@ modules:
       - type: archive
         url: https://github.com/gphoto/libgphoto2/releases/download/v2.5.31/libgphoto2-2.5.31.tar.xz
         sha256: 8fc7bf40f979459509b87dd4ff1aae9b6c1c2b4724d37db576081eec15406ace
-      # - type: git
-      #   url: https://github.com/gphoto/libgphoto2.git
-      #   tag: v2.5.31
-      #   commit: ba28af2d22fd4cb7fa76a8ff569ba498e8021db5
-      #   x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
-      #     type: git
-      #     tag-pattern: ^v(\d[\d\.]+\d)$ # Regex pattern that matches latest git tag and compares it to source
+        x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+          type: html
+          url: https://raw.githubusercontent.com/gphoto/libgphoto2/refs/heads/master/NEWS                           # Use this file to...
+          version-pattern: libgphoto2\s(\d[\d\.]+\d)\srelease                                                       # Search for this regex pattern
+          url-template: https://github.com/gphoto/libgphoto2/releases/download/v$version/libgphoto2-$version.tar.xz # Compare this file (found using regex match from above) to the source to see if there is a newer version
       # Patch that allows building with stricter GCC 14 compiler
       - type: patch
         path: Patches/libgphoto-gcc14.patch
-    # buildsystem: simple
-    # build-commands:
-    #   - |
-    #     # autoreconf -is
-    #     ./configure --prefix=${FLATPAK_DEST}
-    #     make
-    #     make install
 
-  # TODO: Figure out why installing this 32bit module overwrites 64bit install above when using the git source (Seems to install into /usr/lib/libgphoto2 even tho compat-i386-build-options specify /usr/lib32)
   - name: libgphoto2-32
     sources: *libgphoto2-sources
     build-options:
       arch:
         x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
-    # buildsystem: simple
-    # build-commands:
-    #   - |
-    #     # autoreconf -is
-    #     ./configure --prefix=${FLATPAK_DEST}
-    #     make
-    #     make install
 
   # This module builds both Wine64 and Wine32 (needed for WoW64 Wine mode) and so looks much different then other modules that build 64/32bit versions seperately and does not use any YAML compat anchors from above
   - name: Wine
