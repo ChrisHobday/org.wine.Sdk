@@ -127,9 +127,6 @@ modules:
         mkdir -p /usr/share/runtime/docs/ri                      # /usr/share/ri symlinks here but it is not created by default and can cause errors when building modules
 
   # TODO: Add module for libOSMesa
-  # TODO: Add module for OSS
-  # TODO: Add module for libcapi20
-  # TODO: Add module for libkrb5
   # TODO: Add module for libnetapi
 
   # For parallel programming (Optional Wine dependency)
@@ -215,7 +212,6 @@ modules:
       arch:
         x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
 
-  # TODO: Add x-checker-data for archived release
   # For handling digital cameras (Optional Wine dependency)
   - name: libgphoto2
     sources: &libgphoto2-sources
@@ -236,6 +232,116 @@ modules:
     build-options:
       arch:
         x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
+
+  # TODO: Figure out how to get patch files that need different strip-components to apply correctly
+  # # For handling sound (ALSA alternative) (Optional Wine dependency)
+  # - name: oss
+  #   sources: &oss-sources
+  #     - type: archive
+  #       url: http://www.4front-tech.com/developer/sources/stable/gpl/oss-v4.2-build2020-src-gpl.tar.bz2
+  #       sha256: df45d86b7e76d75c20bf3b98ce4849a196fa3de309ec3839dc48951010927e9e
+  #       # x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+  #       #   type: html
+  #       #   url: https://raw.githubusercontent.com/gphoto/libgphoto2/refs/heads/master/NEWS                           # Use this file to...
+  #       #   version-pattern: libgphoto2\s(\d[\d\.]+\d)\srelease                                                       # Search for this regex pattern
+  #       #   url-template: https://github.com/gphoto/libgphoto2/releases/download/v$version/libgphoto2-$version.tar.xz # Compare this file (found using regex match from above) to the source to see if there is a newer version
+  #     - type: patch
+  #       path: Patches/osscore.patch
+  #     - type: patch
+  #       path: Patches/extramodules.patch
+  #     - type: patch
+  #       path: Patches/ossvermagic.patch
+  #       strip-components: 0
+  #     - type: patch
+  #       path: Patches/rm-init-scripts.patch
+  #       strip-components: 2
+  #     - type: patch
+  #       path: Patches/remove-hal.patch
+  #       strip-components: 2
+  #     - type: patch
+  #       path: Patches/soundon.patch
+  #   buildsystem: simple # Simple buildsystem required because no/auto buildsystem tries to pass --prefix flag which is not allowed
+  #   build-commands:
+  #     - |
+
+  #       # Make build directory and change to it (OSS complains if .configure is ran from a non-empty directory)
+  #       mkdir build
+  #       cd build
+  #       ../configure --enable-libsalsa=NO
+  #       make
+  #       make install
+
+  # - name: oss-32
+  #   sources: *oss-sources
+  #   build-options:
+  #     arch:
+  #       x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
+  #   buildsystem: simple # Simple buildsystem required because no/auto buildsystem tries to pass --prefix flag which is not allowed
+  #   build-commands:
+  #     - |
+  #       # Make build directory and change to it (OSS complains if .configure is ran from a non-empty directory)
+  #       mkdir build
+  #       cd build
+  #       ../configure
+  #       make
+  #       make install
+
+  # For handling ISDN devices (Optional Wine dependency)
+  - name: libcapi20
+    sources: &libcapi20_sources
+      - type: archive
+        url: http://deb.debian.org/debian/pool/main/libc/libcapi20-3/libcapi20-3_3.27.orig.tar.bz2
+        sha256: d8e423d5adba1750f511a2c088296db2a8a2e1e9209401871b01ce411d8ac583
+        x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+          type: html
+          url: http://deb.debian.org/debian/pool/main/libc/libcapi20-3/ # Use this file to...
+          pattern: (libcapi20-3_(\d[\d\.]+\d).orig.tar.bz2)             # Search for this regex pattern and compare it to source to see if there is a newer version
+
+  - name: libcapi20-32bit
+    sources: *libcapi20_sources
+    build-options:
+      arch:
+        x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
+
+  # - name: krb5
+  #   sources: &krb5-sources
+  #     - type: git
+  #       url: https://github.com/krb5/krb5.git
+  #       tag: krb5-1.21.3-final
+  #       commit: 8f56f544dd179056e9b8d02552e6c5e392eb2966
+  #     # Shell script for autogen (Runs before building)
+  #     - type: shell
+  #       dest: src
+  #       commands:
+  #         - autoreconf -si
+  #   subdir: src # krb5 has the source code in a subdir called src
+  #   # config-opts: &krb5-config-opts
+  #   #   - --localstatedir=/var/lib
+  #   #   - --sbindir=${FLATPAK_DEST}/bin
+  #   #   - --disable-static
+  #   #   - --disable-rpath
+  #   build-options:
+  #     append-path: /usr/lib/sdk/mingw-w64/bin
+  #     env:
+  #       PERL5LIB: /usr/lib/perl5/
+  #       PERL_MM_OPT: INSTALL_BASE=${FLATPAK_DEST}
+  #   buildsystem: simple
+  #   build-commands: &krb5-build-commands
+  #     - |
+  #       # ./configure --help
+  #       ./configure --bindir=${FLATPAK_DEST}/bin --sbindir=${FLATPAK_DEST}/bin --disable-static --disable-rpath --localstatedir=/var/lib
+  #       make
+  #       make install
+
+  # - name: krb5-32bit
+  #   sources: *krb5-sources
+  #   subdir: src
+  #   config-opts: *krb5-config-opts
+  #   build-options:
+  #     arch:
+  #       x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
+  #   buildsystem: simple
+  #   build-commands: *krb5-build-commands
 
   # This module builds both Wine64 and Wine32 (needed for WoW64 Wine mode) and so looks much different then other modules that build 64/32bit versions seperately and does not use any YAML compat anchors from above
   - name: Wine
