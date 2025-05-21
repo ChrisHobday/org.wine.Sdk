@@ -120,15 +120,51 @@ modules:
         mkdir -p ${FLATPAK_DEST}/lib/ffmpeg                      # FFmpeg
         mkdir -p ${FLATPAK_DEST}/lib32/ffmpeg                    # 32bit FFmpeg
 
-        # Make directories needed by modules
+        # Make docs directories needed by modules
         mkdir -p /usr/share/runtime/docs/man                     # /usr/share/man symlinks here but it is not created by default and can cause errors when building modules
         mkdir -p /usr/share/runtime/docs/info                    # /usr/share/info symlinks here but it is not created by default and can cause errors when building modules
         mkdir -p /usr/share/runtime/docs/doc                     # /usr/share/doc symlinks here but it is not created by default and can cause errors when building modules
         mkdir -p /usr/share/runtime/docs/ri                      # /usr/share/ri symlinks here but it is not created by default and can cause errors when building modules
+        
+        # Make locale directories needed by modules
+        pushd /usr/share/locale                                  # Change to /usr/share/locale directory, and store current directory to be popd back to below
+        for link in `find . -type l`; do                         # For each symlink in /usr/share/locale
+          mkdir -p $(readlink  $link)                            # Make the directory the symlink is pointing to (If it doesn't already exist)
+        done
+        popd                                                     # Change back to starting directory (location where last pushd was used above)
 
-  # TODO: Add module for libOSMesa
   # TODO: Add module for libnetapi
 
+  # TODO: Add x-checker-data
+  # For OpenGL rendering in bitmaps
+  - name: libosmesa
+    sources: &libosmesa-sources
+      - type: archive
+        # url: https://archive.mesa3d.org/mesa-20.2.6.tar.xz
+        url: https://ftp.icm.edu.pl/pub/graphics/mesa/mesa-20.2.6.tar.xz
+        sha256: f12ca3c6c622f11cd79ad66b4220f04514fa96f795062fe92a37339ab19885db
+    config-opts: &libosmesa-config-opts
+      - -Dosmesa=classic
+      - -Ddri-drivers=[]
+      - -Dgallium-drivers=[]
+      - -Dvulkan-drivers=[]
+      - -Dplatforms=[]
+    buildsystem: meson
+    cleanup: &libosmesa-cleanup
+      - /share/drirc.d
+      - /include
+      - "*.a"
+
+  # For OpenGL rendering in bitmaps
+  - name: libosmesa-32
+    sources: *libosmesa-sources
+    config-opts: *libosmesa-config-opts
+    build-options:
+      arch:
+        x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
+    buildsystem: meson
+    cleanup: *libosmesa-cleanup
+  
   # For parallel programming (Optional Wine dependency)
   - name: OpenCL
     sources:
@@ -200,7 +236,7 @@ modules:
     sources: &libusb-sources
       - type: git
         url: https://github.com/libusb/libusb.git
-        tag: v1.0.28
+        tag: 'v1.0.28'
         commit: a61afe5f75d969c4561a1d0ad753aa23cee6329a
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
@@ -303,45 +339,20 @@ modules:
       arch:
         x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
 
-  # - name: krb5
-  #   sources: &krb5-sources
-  #     - type: git
-  #       url: https://github.com/krb5/krb5.git
-  #       tag: krb5-1.21.3-final
-  #       commit: 8f56f544dd179056e9b8d02552e6c5e392eb2966
-  #     # Shell script for autogen (Runs before building)
-  #     - type: shell
-  #       dest: src
-  #       commands:
-  #         - autoreconf -si
-  #   subdir: src # krb5 has the source code in a subdir called src
-  #   # config-opts: &krb5-config-opts
-  #   #   - --localstatedir=/var/lib
-  #   #   - --sbindir=${FLATPAK_DEST}/bin
-  #   #   - --disable-static
-  #   #   - --disable-rpath
-  #   build-options:
-  #     append-path: /usr/lib/sdk/mingw-w64/bin
-  #     env:
-  #       PERL5LIB: /usr/lib/perl5/
-  #       PERL_MM_OPT: INSTALL_BASE=${FLATPAK_DEST}
-  #   buildsystem: simple
-  #   build-commands: &krb5-build-commands
-  #     - |
-  #       # ./configure --help
-  #       ./configure --bindir=${FLATPAK_DEST}/bin --sbindir=${FLATPAK_DEST}/bin --disable-static --disable-rpath --localstatedir=/var/lib
-  #       make
-  #       make install
+  # For Kerberos authentication protocol (Optional Wine dependency)
+  - name: krb5
+    sources: &krb5-sources
+      - type: archive
+        url: https://web.mit.edu/kerberos/dist/krb5/1.21/krb5-1.21.3.tar.gz
+        sha256: b7a4cd5ead67fb08b980b21abd150ff7217e85ea320c9ed0c6dadd304840ad35
+    subdir: src # krb5 has the source code in a subdir called src
 
-  # - name: krb5-32bit
-  #   sources: *krb5-sources
-  #   subdir: src
-  #   config-opts: *krb5-config-opts
-  #   build-options:
-  #     arch:
-  #       x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
-  #   buildsystem: simple
-  #   build-commands: *krb5-build-commands
+  - name: krb5-32bit
+    sources: *krb5-sources
+    subdir: src  # krb5 has the source code in a subdir called src
+    build-options:
+      arch:
+        x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
 
   # This module builds both Wine64 and Wine32 (needed for WoW64 Wine mode) and so looks much different then other modules that build 64/32bit versions seperately and does not use any YAML compat anchors from above
   - name: Wine
