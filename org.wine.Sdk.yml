@@ -133,8 +133,6 @@ modules:
         done
         popd                                                     # Change back to starting directory (location where last pushd was used above)
 
-  # TODO: Add module for libnetapi
-
   # TODO: Add x-checker-data
   # For OpenGL rendering in bitmaps
   - name: libosmesa
@@ -350,6 +348,40 @@ modules:
   - name: krb5-32bit
     sources: *krb5-sources
     subdir: src  # krb5 has the source code in a subdir called src
+    build-options:
+      arch:
+        x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
+
+  # A Perl driver (Mandatory Samba dependency)
+  - name: perl-parse-yapp
+    sources: &perl-parse-yapp-sources
+      - type: archive
+        url: https://cpan.metacpan.org/authors/id/W/WB/WBRASWELL/Parse-Yapp-1.21.tar.gz
+        sha256: 3810e998308fba2e0f4f26043035032b027ce51ce5c8a52a8b8e340ca65f13e5
+    buildsystem: simple
+    build-commands: &perl-parse-yapp-build-commands
+      - perl Makefile.PL
+      - make install
+
+  # TODO: Add x-checker-data
+  # For SMB networking protocol (Optional libnetapi Wine dependency)
+  - name: samba
+    sources: &samba-sources
+      - type: archive
+        url: https://download.samba.org/pub/samba/stable/samba-4.22.1.tar.gz
+        sha256: 6a1f89f1ab25916e255f1c2c3a4a88235a854af2eca40bb9d9bba7545b684a0a
+    config-opts: &samba-config-opts
+      - --enable-fhs
+      - --without-ldap
+      - --without-ldb-lmdb
+      - --without-json
+      - --without-ad-dc
+      - --without-ads
+      - --without-pam
+
+  - name: samba-32
+    sources: *samba-sources
+    config-opts: *samba-config-opts
     build-options:
       arch:
         x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
