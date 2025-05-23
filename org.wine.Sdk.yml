@@ -125,7 +125,7 @@ modules:
         mkdir -p /usr/share/runtime/docs/info                    # /usr/share/info symlinks here but it is not created by default and can cause errors when building modules
         mkdir -p /usr/share/runtime/docs/doc                     # /usr/share/doc symlinks here but it is not created by default and can cause errors when building modules
         mkdir -p /usr/share/runtime/docs/ri                      # /usr/share/ri symlinks here but it is not created by default and can cause errors when building modules
-        
+
         # Make locale directories needed by modules
         pushd /usr/share/locale                                  # Change to /usr/share/locale directory, and store current directory to be popd back to below
         for link in `find . -type l`; do                         # For each symlink in /usr/share/locale
@@ -138,7 +138,7 @@ modules:
     sources: &libosmesa-sources
       - type: git
         url: https://gitlab.freedesktop.org/mesa/mesa.git
-        tag: 'mesa-20.2.6'
+        tag: mesa-20.2.6
         commit: 7b866d516a7dc0a36dc8ea7ce7733414294e26d9
     config-opts: &libosmesa-config-opts
       - -Dosmesa=classic
@@ -147,23 +147,27 @@ modules:
       - -Dvulkan-drivers=[]
       - -Dplatforms=[]
     buildsystem: meson
-    cleanup: &libosmesa-cleanup # Files to be removed after all modules are built
-      - "/share/drirc.d"
-      - "/share/docs" # Remove documentation files
-      - "*.la"        # Remove libtool archive files
-      - "*.a"         # Remove static library files
-      - "/include"    # Remove header files
-      - "/lib/debug"  # Remove debug files
+    cleanup: &libosmesa-cleanup
+                                # Files to be removed after all modules are built
+      - /share/drirc.d
+      - /share/docs   # Remove documentation files
+      - '*.la'        # Remove libtool archive files
+      - '*.a'         # Remove static library files
+      - /include      # Remove header files
+      - /lib/debug    # Remove debug files
 
   - name: libosmesa-32
-    sources: *libosmesa-sources         # Use &libosmesa-sources anchor from above
-    config-opts: *libosmesa-config-opts # Use &libosmesa-config-opts anchor from above
+    sources: *libosmesa-sources
+                                        # Use &libosmesa-sources anchor from above
+    config-opts: *libosmesa-config-opts
+                                        # Use &libosmesa-config-opts anchor from above
     build-options:
       arch:
-        x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
+        x86_64: *compat-i386-build-options
+                                           # Use &compat-i386-build-options anchor from above
     buildsystem: meson
-    cleanup: *libosmesa-cleanup # Use &libosmesa-cleanup anchor from above
-  
+    cleanup: *libosmesa-cleanup
+                                # Use &libosmesa-cleanup anchor from above
   # For parallel programming (Optional Wine dependency)
   - name: opencl
     sources:
@@ -176,35 +180,39 @@ modules:
           tag-pattern: ^v(\d[\d\.]+\d)$ # Regex pattern that matches latest git tag and compares it to source
     buildsystem: cmake
     cleanup: # Files to be removed after all modules are built
-      - "/share/docs" # Remove documentation files
-      - "*.la"        # Remove libtool archive files
-      - "*.a"         # Remove static library files
-      - "/include"    # Remove header files
-      - "/lib/debug"  # Remove debug files
+      - /share/docs   # Remove documentation files
+      - '*.la'        # Remove libtool archive files
+      - '*.a'         # Remove static library files
+      - /include      # Remove header files
+      - /lib/debug    # Remove debug files
 
   # For handling network traffic/packet capture (Optional Wine dependency)
   - name: libpcap
     sources: &libpcap-sources
       - type: git
         url: https://github.com/the-tcpdump-group/libpcap
-        tag: 'libpcap-1.10.5'
+        tag: libpcap-1.10.5
         commit: bbcbc9174df3298a854daee2b3e666a4b6e5383a
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
           tag-pattern: ^libpcap-(\d[\d\.]+\d)$ # Regex pattern that matches latest git tag and compares it to source
-    cleanup: &libpcap-cleanup # Files to be removed after all modules are built
-      - "/share/docs" # Remove documentation files
-      - "*.la"        # Remove libtool archive files
-      - "*.a"         # Remove static library files
-      - "/include"    # Remove header files
-      - "/lib/debug"  # Remove debug files
+    cleanup: &libpcap-cleanup
+                              # Files to be removed after all modules are built
+      - /share/docs   # Remove documentation files
+      - '*.la'        # Remove libtool archive files
+      - '*.a'         # Remove static library files
+      - /include      # Remove header files
+      - /lib/debug    # Remove debug files
 
   - name: libpcap-32
-    sources: *libpcap-sources # Reuse &libpcap-sources anchor from above
+    sources: *libpcap-sources
+                              # Reuse &libpcap-sources anchor from above
     build-options:
       arch:
-        x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
-    cleanup: *libpcap-cleanup # Use &libpcap-cleanup anchor from above
+        x86_64: *compat-i386-build-options
+                                           # Use &compat-i386-build-options anchor from above
+    cleanup: *libpcap-cleanup
+                              # Use &libpcap-cleanup anchor from above
 
   # Middleware for access smart cards (Optional Wine dependency)
   - name: libpcsclite
@@ -218,20 +226,25 @@ modules:
           pattern: (pcsc-lite-(\d[\d\.]+\d).tar.xz) # Search for this regex pattern and compare it to source to see if there is a newer version
     config-opts: &libpcsclite-config-opts
       - --disable-polkit # Disable polkit dependency
-    cleanup: &libpcsclite-cleanup # Files to be removed after all modules are built
-      - "/share/docs" # Remove documentation files
-      - "*.la"        # Remove libtool archive files
-      - "*.a"         # Remove static library files
-      - "/include"    # Remove header files
-      - "/lib/debug"  # Remove debug files
+    cleanup: &libpcsclite-cleanup
+                                  # Files to be removed after all modules are built
+      - /share/docs   # Remove documentation files
+      - '*.la'        # Remove libtool archive files
+      - '*.a'         # Remove static library files
+      - /include      # Remove header files
+      - /lib/debug    # Remove debug files
 
   - name: libpcsclite-32
-    sources: *libpcsclite-sources         # Reuse &libpcsclite-sources anchor from above
-    config-opts: *libpcsclite-config-opts # Reuse &libpcsclite-config-opts anchor from above
+    sources: *libpcsclite-sources
+                                          # Reuse &libpcsclite-sources anchor from above
+    config-opts: *libpcsclite-config-opts
+                                          # Reuse &libpcsclite-config-opts anchor from above
     build-options:
       arch:
-        x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
-    cleanup: *libpcsclite-cleanup # Use &libpcsclite-cleanup anchor from above
+        x86_64: *compat-i386-build-options
+                                           # Use &compat-i386-build-options anchor from above
+    cleanup: *libpcsclite-cleanup
+                                  # Use &libpcsclite-cleanup anchor from above
 
   # For handling scanners (Optional Wine dependency)
   - name: libsane
@@ -243,43 +256,49 @@ modules:
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
           tag-pattern: ^(\d[\d\.]+\d)$ # Regex pattern that matches latest git tag and compares it to source
-    cleanup: &libsane-cleanup # Files to be removed after all modules are built
-      - "/share/docs" # Remove documentation files
-      - "*.la"        # Remove libtool archive files
-      - "*.a"         # Remove static library files
-      - "/include"    # Remove header files
-      - "/lib/debug"  # Remove debug files
+    cleanup: &libsane-cleanup
+                              # Files to be removed after all modules are built
+      - /share/docs   # Remove documentation files
+      - '*.la'        # Remove libtool archive files
+      - '*.a'         # Remove static library files
+      - /include      # Remove header files
+      - /lib/debug    # Remove debug files
 
   - name: libsane-32
     sources: *libsane-sources
     build-options:
       arch:
-        x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
-    cleanup: *libsane-cleanup # Use &libsane-cleanup anchor from above
+        x86_64: *compat-i386-build-options
+                                           # Use &compat-i386-build-options anchor from above
+    cleanup: *libsane-cleanup
+                              # Use &libsane-cleanup anchor from above
 
   # For handling USB devices (Optional Wine dependency)
   - name: libusb
     sources: &libusb-sources
       - type: git
         url: https://github.com/libusb/libusb.git
-        tag: 'v1.0.28'
+        tag: v1.0.28
         commit: a61afe5f75d969c4561a1d0ad753aa23cee6329a
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
           tag-pattern: ^v(\d[\d\.]+\d)$ # Regex pattern that matches latest git tag and compares it to source
-    cleanup: &libusb-cleanup # Files to be removed after all modules are built
-      - "/share/docs" # Remove documentation files
-      - "*.la"        # Remove libtool archive files
-      - "*.a"         # Remove static library files
-      - "/include"    # Remove header files
-      - "/lib/debug"  # Remove debug files
+    cleanup: &libusb-cleanup
+                             # Files to be removed after all modules are built
+      - /share/docs   # Remove documentation files
+      - '*.la'        # Remove libtool archive files
+      - '*.a'         # Remove static library files
+      - /include      # Remove header files
+      - /lib/debug    # Remove debug files
 
   - name: Libusb-32
     sources: *libusb-sources
     build-options:
       arch:
-        x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
-    cleanup: *libusb-cleanup # Use &libusb-cleanup anchor from above
+        x86_64: *compat-i386-build-options
+                                           # Use &compat-i386-build-options anchor from above
+    cleanup: *libusb-cleanup
+                             # Use &libusb-cleanup anchor from above
 
   # For handling digital cameras (Optional Wine dependency)
   - name: libgphoto2
@@ -295,19 +314,22 @@ modules:
       # Patch that allows building with stricter GCC 14 compiler
       - type: patch
         path: Patches/libgphoto-gcc14.patch
-    cleanup: &libgphoto2-cleanup # Files to be removed after all modules are built
-      - "/share/docs" # Remove documentation files
-      - "*.la"        # Remove libtool archive files
-      - "*.a"         # Remove static library files
-      - "/include"    # Remove header files
-      - "/lib/debug"  # Remove debug files
+    cleanup: &libgphoto2-cleanup
+                                 # Files to be removed after all modules are built
+      - /share/docs   # Remove documentation files
+      - '*.la'        # Remove libtool archive files
+      - '*.a'         # Remove static library files
+      - /include      # Remove header files
+      - /lib/debug    # Remove debug files
 
   - name: libgphoto2-32
     sources: *libgphoto2-sources
     build-options:
       arch:
-        x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
-    cleanup: *libgphoto2-cleanup # Use &libgphoto2-cleanup anchor from above
+        x86_64: *compat-i386-build-options
+                                           # Use &compat-i386-build-options anchor from above
+    cleanup: *libgphoto2-cleanup
+                                 # Use &libgphoto2-cleanup anchor from above
 
   # TODO: Figure out how to get patch files that need different strip-components to apply correctly
   # # For handling sound (ALSA alternative) (Optional Wine dependency)
@@ -372,19 +394,22 @@ modules:
           type: html
           url: http://deb.debian.org/debian/pool/main/libc/libcapi20-3/ # Use this file to...
           pattern: (libcapi20-3_(\d[\d\.]+\d).orig.tar.bz2)             # Search for this regex pattern and compare it to source to see if there is a newer version
-    cleanup: &libcapi20-cleanup # Files to be removed after all modules are built
-      - "/share/docs" # Remove documentation files
-      - "*.la"        # Remove libtool archive files
-      - "*.a"         # Remove static library files
-      - "/include"    # Remove header files
-      - "/lib/debug"  # Remove debug files
+    cleanup: &libcapi20-cleanup
+                                # Files to be removed after all modules are built
+      - /share/docs   # Remove documentation files
+      - '*.la'        # Remove libtool archive files
+      - '*.a'         # Remove static library files
+      - /include      # Remove header files
+      - /lib/debug    # Remove debug files
 
   - name: libcapi20-32bit
     sources: *libcapi20_sources
     build-options:
       arch:
-        x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
-    cleanup: *libcapi20-cleanup # Use &libcapi20-cleanup anchor from above
+        x86_64: *compat-i386-build-options
+                                           # Use &compat-i386-build-options anchor from above
+    cleanup: *libcapi20-cleanup
+                                # Use &libcapi20-cleanup anchor from above
 
   # For Kerberos authentication protocol (Optional Wine dependency)
   - name: krb5
@@ -393,34 +418,37 @@ modules:
         url: https://web.mit.edu/kerberos/dist/krb5/1.21/krb5-1.21.3.tar.gz
         sha256: b7a4cd5ead67fb08b980b21abd150ff7217e85ea320c9ed0c6dadd304840ad35
     subdir: src # krb5 has the source code in a subdir called src
-    cleanup: &krb5-cleanup # Files to be removed after all modules are built
-      - "/share/docs"     # Remove documentation files
-      - "/share/examples" # Remove example files
-      - "*.la"            # Remove libtool archive files
-      - "*.a"             # Remove static library files
-      - "/include"        # Remove header files
-      - "/lib/debug"      # Remove debug files
+    cleanup: &krb5-cleanup
+                           # Files to be removed after all modules are built
+      - /share/docs       # Remove documentation files
+      - /share/examples   # Remove example files
+      - '*.la'            # Remove libtool archive files
+      - '*.a'             # Remove static library files
+      - /include          # Remove header files
+      - /lib/debug        # Remove debug files
 
   - name: krb5-32bit
     sources: *krb5-sources
     subdir: src  # krb5 has the source code in a subdir called src
     build-options:
       arch:
-        x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
-    cleanup: *krb5-cleanup # Use &krb5-cleanup anchor from above
+        x86_64: *compat-i386-build-options
+                                           # Use &compat-i386-build-options anchor from above
+    cleanup: *krb5-cleanup
+                           # Use &krb5-cleanup anchor from above
 
   # A Perl driver (Mandatory Samba dependency)
   - name: perl-parse-yapp
-    sources: &perl-parse-yapp-sources
+    sources:
       - type: archive
         url: https://cpan.metacpan.org/authors/id/W/WB/WBRASWELL/Parse-Yapp-1.21.tar.gz
         sha256: 3810e998308fba2e0f4f26043035032b027ce51ce5c8a52a8b8e340ca65f13e5
     buildsystem: simple
-    build-commands: &perl-parse-yapp-build-commands
+    build-commands:
       - perl Makefile.PL
       - make install
     cleanup: # Files to be removed after all modules are built
-      - "/share/docs"     # Remove documentation files
+      - /share/docs       # Remove documentation files
 
   # TODO: Add x-checker-data
   # For SMB networking protocol (Optional libnetapi Wine dependency)
@@ -439,29 +467,32 @@ modules:
       - --without-ad-dc
       - --without-ads
       - --without-pam
-    cleanup: &samba-cleanup # Files to be removed after all modules are built
-      - "*"
-      - "/share/docs"     # Remove documentation files
-      - "*.la"            # Remove libtool archive files
-      - "*.a"             # Remove static library files
-      - "/include"        # Remove header files
-      - "/lib/debug"      # Remove debug files
+    cleanup: &samba-cleanup
+                            # Files to be removed after all modules are built
+      - '*'
+      - /share/docs       # Remove documentation files
+      - '*.la'            # Remove libtool archive files
+      - '*.a'             # Remove static library files
+      - /include          # Remove header files
+      - /lib/debug        # Remove debug files
 
   - name: samba-32
     sources: *samba-sources
     config-opts: *samba-config-opts
     build-options:
       arch:
-        x86_64: *compat-i386-build-options # Use &compat-i386-build-options anchor from above
-    cleanup: *samba-cleanup # Use &samba-cleanup anchor from above
+        x86_64: *compat-i386-build-options
+                                           # Use &compat-i386-build-options anchor from above
+    cleanup: *samba-cleanup
+                            # Use &samba-cleanup anchor from above
 
   # This module builds both Wine64 and Wine32 (needed for WoW64 Wine mode) and so looks much different then other modules that build 64/32bit versions seperately and does not use any YAML compat anchors from above
   - name: wine
     sources:
       - type: git
         url: https://gitlab.winehq.org/wine/wine.git
-        tag: 'wine-10.7'
-        commit: 71c6c3dd6dcfffc040aa5a10a825eeb8e17f6299
+        tag: wine-10.8
+        commit: 7f833db11ffea4f3f4fa07be31d30559aff9c5fb
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
           tag-pattern: ^wine-(\d+\.\d+)$ # Regex pattern that matches latest git tag and compares it to source
@@ -469,13 +500,12 @@ modules:
 
       - type: git
         url: https://gitlab.winehq.org/wine/wine-staging.git
-        tag: 'v10.7'
-        commit: edfe4935ff2351bd90d4acb03ff6482c02556024
+        tag: v10.8
+        commit: 47f77594abf8e0ad04e20f0cdaebbb725bb8fa22
         dest: WineStaging
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
           tag-pattern: ^v(\d+\.\d+)$ # Regex pattern that matches latest git tag and compares it to source
-          
       - type: file
         path: org.wine.Sdk.metainfo.xml
 
