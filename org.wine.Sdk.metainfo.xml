@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="runtime">
-    <id>org.wine.Sdk</id>
-    <name>Wine Sdk</name>
-    <summary>Wine Sdk</summary>
-    <releases>
+  <id>org.wine.Sdk</id>
+  <name>Wine Sdk</name>
+  <summary>Wine Sdk</summary>
+  <releases>
     <release version="10.8" date="2025-05-23">
       <description></description>
     </release>

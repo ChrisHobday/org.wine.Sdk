@@ -148,7 +148,6 @@ modules:
       - -Dplatforms=[]
     buildsystem: meson
     cleanup: &libosmesa-cleanup
-                                # Files to be removed after all modules are built
       - /share/drirc.d
       - /share/docs   # Remove documentation files
       - '*.la'        # Remove libtool archive files
@@ -158,16 +157,13 @@ modules:
 
   - name: libosmesa-32
     sources: *libosmesa-sources
-                                        # Use &libosmesa-sources anchor from above
     config-opts: *libosmesa-config-opts
-                                        # Use &libosmesa-config-opts anchor from above
     build-options:
       arch:
         x86_64: *compat-i386-build-options
-                                           # Use &compat-i386-build-options anchor from above
     buildsystem: meson
     cleanup: *libosmesa-cleanup
-                                # Use &libosmesa-cleanup anchor from above
+
   # For parallel programming (Optional Wine dependency)
   - name: opencl
     sources:
@@ -197,7 +193,6 @@ modules:
           type: git
           tag-pattern: ^libpcap-(\d[\d\.]+\d)$ # Regex pattern that matches latest git tag and compares it to source
     cleanup: &libpcap-cleanup
-                              # Files to be removed after all modules are built
       - /share/docs   # Remove documentation files
       - '*.la'        # Remove libtool archive files
       - '*.a'         # Remove static library files
@@ -206,13 +201,10 @@ modules:
 
   - name: libpcap-32
     sources: *libpcap-sources
-                              # Reuse &libpcap-sources anchor from above
     build-options:
       arch:
         x86_64: *compat-i386-build-options
-                                           # Use &compat-i386-build-options anchor from above
     cleanup: *libpcap-cleanup
-                              # Use &libpcap-cleanup anchor from above
 
   # Middleware for access smart cards (Optional Wine dependency)
   - name: libpcsclite
@@ -227,7 +219,6 @@ modules:
     config-opts: &libpcsclite-config-opts
       - --disable-polkit # Disable polkit dependency
     cleanup: &libpcsclite-cleanup
-                                  # Files to be removed after all modules are built
       - /share/docs   # Remove documentation files
       - '*.la'        # Remove libtool archive files
       - '*.a'         # Remove static library files
@@ -236,15 +227,11 @@ modules:
 
   - name: libpcsclite-32
     sources: *libpcsclite-sources
-                                          # Reuse &libpcsclite-sources anchor from above
     config-opts: *libpcsclite-config-opts
-                                          # Reuse &libpcsclite-config-opts anchor from above
     build-options:
       arch:
         x86_64: *compat-i386-build-options
-                                           # Use &compat-i386-build-options anchor from above
     cleanup: *libpcsclite-cleanup
-                                  # Use &libpcsclite-cleanup anchor from above
 
   # For handling scanners (Optional Wine dependency)
   - name: libsane
@@ -257,7 +244,6 @@ modules:
           type: git
           tag-pattern: ^(\d[\d\.]+\d)$ # Regex pattern that matches latest git tag and compares it to source
     cleanup: &libsane-cleanup
-                              # Files to be removed after all modules are built
       - /share/docs   # Remove documentation files
       - '*.la'        # Remove libtool archive files
       - '*.a'         # Remove static library files
@@ -269,9 +255,7 @@ modules:
     build-options:
       arch:
         x86_64: *compat-i386-build-options
-                                           # Use &compat-i386-build-options anchor from above
     cleanup: *libsane-cleanup
-                              # Use &libsane-cleanup anchor from above
 
   # For handling USB devices (Optional Wine dependency)
   - name: libusb
@@ -284,7 +268,6 @@ modules:
           type: git
           tag-pattern: ^v(\d[\d\.]+\d)$ # Regex pattern that matches latest git tag and compares it to source
     cleanup: &libusb-cleanup
-                             # Files to be removed after all modules are built
       - /share/docs   # Remove documentation files
       - '*.la'        # Remove libtool archive files
       - '*.a'         # Remove static library files
@@ -296,9 +279,7 @@ modules:
     build-options:
       arch:
         x86_64: *compat-i386-build-options
-                                           # Use &compat-i386-build-options anchor from above
     cleanup: *libusb-cleanup
-                             # Use &libusb-cleanup anchor from above
 
   # For handling digital cameras (Optional Wine dependency)
   - name: libgphoto2
@@ -315,7 +296,6 @@ modules:
       - type: patch
         path: Patches/libgphoto-gcc14.patch
     cleanup: &libgphoto2-cleanup
-                                 # Files to be removed after all modules are built
       - /share/docs   # Remove documentation files
       - '*.la'        # Remove libtool archive files
       - '*.a'         # Remove static library files
@@ -327,9 +307,7 @@ modules:
     build-options:
       arch:
         x86_64: *compat-i386-build-options
-                                           # Use &compat-i386-build-options anchor from above
     cleanup: *libgphoto2-cleanup
-                                 # Use &libgphoto2-cleanup anchor from above
 
   # TODO: Figure out how to get patch files that need different strip-components to apply correctly
   # # For handling sound (ALSA alternative) (Optional Wine dependency)
@@ -395,7 +373,6 @@ modules:
           url: http://deb.debian.org/debian/pool/main/libc/libcapi20-3/ # Use this file to...
           pattern: (libcapi20-3_(\d[\d\.]+\d).orig.tar.bz2)             # Search for this regex pattern and compare it to source to see if there is a newer version
     cleanup: &libcapi20-cleanup
-                                # Files to be removed after all modules are built
       - /share/docs   # Remove documentation files
       - '*.la'        # Remove libtool archive files
       - '*.a'         # Remove static library files
@@ -407,9 +384,7 @@ modules:
     build-options:
       arch:
         x86_64: *compat-i386-build-options
-                                           # Use &compat-i386-build-options anchor from above
     cleanup: *libcapi20-cleanup
-                                # Use &libcapi20-cleanup anchor from above
 
   # For Kerberos authentication protocol (Optional Wine dependency)
   - name: krb5
@@ -419,7 +394,6 @@ modules:
         sha256: b7a4cd5ead67fb08b980b21abd150ff7217e85ea320c9ed0c6dadd304840ad35
     subdir: src # krb5 has the source code in a subdir called src
     cleanup: &krb5-cleanup
-                           # Files to be removed after all modules are built
       - /share/docs       # Remove documentation files
       - /share/examples   # Remove example files
       - '*.la'            # Remove libtool archive files
@@ -433,9 +407,7 @@ modules:
     build-options:
       arch:
         x86_64: *compat-i386-build-options
-                                           # Use &compat-i386-build-options anchor from above
     cleanup: *krb5-cleanup
-                           # Use &krb5-cleanup anchor from above
 
   # A Perl driver (Mandatory Samba dependency)
   - name: perl-parse-yapp
@@ -468,7 +440,6 @@ modules:
       - --without-ads
       - --without-pam
     cleanup: &samba-cleanup
-                            # Files to be removed after all modules are built
       - '*'
       - /share/docs       # Remove documentation files
       - '*.la'            # Remove libtool archive files
@@ -482,9 +453,7 @@ modules:
     build-options:
       arch:
         x86_64: *compat-i386-build-options
-                                           # Use &compat-i386-build-options anchor from above
     cleanup: *samba-cleanup
-                            # Use &samba-cleanup anchor from above
 
   # This module builds both Wine64 and Wine32 (needed for WoW64 Wine mode) and so looks much different then other modules that build 64/32bit versions seperately and does not use any YAML compat anchors from above
   - name: wine
