@@ -1,13 +1,13 @@
 build-runtime: true
 id: org.wine.Sdk
 id-platform: org.wine.Platform
-branch: &app-version '10.7'
+branch: &app-version '10.8'
 sdk: org.freedesktop.Sdk
 runtime: org.freedesktop.Platform
 runtime-version: &runtime-version '24.08'
 finish-args:
-  - --sdk=org.wine.Sdk//10.7
-  - --runtime=org.wine.Platform//10.7
+  - --sdk=org.wine.Sdk//10.8
+  - --runtime=org.wine.Platform//10.8
   - --socket=pcsc # Child apps will need to enable this to access smartcards
 
 sdk-extensions:
