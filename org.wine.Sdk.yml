@@ -238,8 +238,8 @@ modules:
     sources: &libsane-sources
       - type: git
         url: https://gitlab.com/sane-project/backends.git
-        tag: 1.3.1
-        commit: 3ff55fd8ee04ae459e199088ebe11ac979671d0e
+        tag: 1.4.0
+        commit: c7e4b5e35e3d614d2b1181d760a717bfc395a203
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
           tag-pattern: ^(\d[\d\.]+\d)$ # Regex pattern that matches latest git tag and compares it to source
