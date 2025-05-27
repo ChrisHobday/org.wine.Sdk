@@ -386,6 +386,7 @@ modules:
         x86_64: *compat-i386-build-options
     cleanup: *libcapi20-cleanup
 
+  # TODO: Add x-checker-data
   # For Kerberos authentication protocol (Optional Wine dependency)
   - name: krb5
     sources: &krb5-sources
@@ -409,6 +410,7 @@ modules:
         x86_64: *compat-i386-build-options
     cleanup: *krb5-cleanup
 
+  # TODO: Add x-checker-data
   # A Perl driver (Mandatory Samba dependency)
   - name: perl-parse-yapp
     sources:
