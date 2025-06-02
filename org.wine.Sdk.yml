@@ -457,6 +457,7 @@ modules:
         x86_64: *compat-i386-build-options
     cleanup: *samba-cleanup
 
+  # TODO: Add cleanup
   # This module builds both Wine64 and Wine32 (needed for WoW64 Wine mode) and so looks much different then other modules that build 64/32bit versions seperately and does not use any YAML compat anchors from above
   - name: wine
     sources:
@@ -482,7 +483,6 @@ modules:
 
       - type: file
         path: org.wine.Platform.metainfo.xml
-
     buildsystem: simple
     build-commands:
       - |
@@ -552,7 +552,6 @@ modules:
           url: https://gitlab.winehq.org/wine/wine/-/raw/master/dlls/appwiz.cpl/addons.c                 # Use this file to...
           version-pattern: GECKO_VERSION\s+"(\d[\d\.]+\d)"                                               # Search for this regex pattern
           url-template: https://dl.winehq.org/wine/wine-gecko/$version/wine-gecko-$version-x86_64.tar.xz # Compare this file (found using regex match from above) to the source to see if there is a newer version
-
     buildsystem: simple
     build-commands:
       - |
@@ -572,13 +571,13 @@ modules:
           url: https://gitlab.winehq.org/wine/wine/-/raw/master/dlls/appwiz.cpl/addons.c            # Use this file to...
           version-pattern: MONO_VERSION\s+"(\d[\d\.]+\d)"                                           # Search for this regex pattern
           url-template: https://dl.winehq.org/wine/wine-mono/$version/wine-mono-$version-x86.tar.xz # Compare this file (found using regex match from above) to the source to see if there is a newer version
-
     buildsystem: simple
     build-commands:
       - |
         mkdir -p ${FLATPAK_DEST}/share/wine/mono/          # Make direcory path for Wine Mono
         cp -a wine-mono-* ${FLATPAK_DEST}/share/wine/mono/ # Copy Wine Mono directory keeping file permissions the same
 
+  # TODO: Add cleanup
   # Tool that can be used to help download and install various libraries, fonts, etc into a Wine prefix
   - name: winetricks
     sources:
@@ -589,12 +588,12 @@ modules:
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
           tag-pattern: ^(\d+)$ # Regex pattern that matches latest git tag and compares it to source
-
     buildsystem: simple
     build-commands:
       - |
         make install
 
+  # TODO: Add x-checker-data
   # Vulkan based D3D8, 9, 10, and 11 replacement dlls
   # Note: This module just places the DXVK dlls in ${FLATPAK_DEST}/share/dxvk/ and child Apps will have to copy/replace the default Wine dlls with these to make use of DXVK
   - name: dxvk
@@ -610,7 +609,6 @@ modules:
       # Script that switches a Wine prefix to the default Wine dlls from DXVK dlls (Optionally ran by child Apps to update their already initialized Wine prefix)
       - type: file
         path: Scripts/WineToDXVK.sh
-
     buildsystem: simple
     build-commands:
       - |
@@ -621,6 +619,7 @@ modules:
         install -Dm755 DXVKToWine.sh -t ${FLATPAK_DEST}/bin/ # Install script for switching Wine prefix to DXVK
         install -Dm755 WineToDXVK.sh -t ${FLATPAK_DEST}/bin/ # Install script for switching Wine prefix to default Wine dlls
 
+  # TODO: Add x-checker-data
   # RPC-Bridge for enabling Discord Rich Presence with Wine apps
   - name: RPC-Bridge
     sources:
@@ -634,4 +633,32 @@ modules:
       - |
         make -j`nproc --ignore=2`                      # Build using the number of available cores minus 2
         install -Dm755 build/* -t ${FLATPAK_DEST}/bin/ # Install all built files
+
+  # TODO: Add x-checker-data
+  # Icoutils for extracting icos from exes
+  - name: Icoutils
+    sources:
+      - type: archive
+        url: http://savannah.nongnu.org/download/icoutils/icoutils-0.32.3.tar.bz2
+        sha256: 17abe02d043a253b68b47e3af69c9fc755b895db68fdc8811786125df564c6e0
+    cleanup:
+      - /share/docs   # Remove documentation files
+      - '*.la'        # Remove libtool archive files
+      - '*.a'         # Remove static library files
+      - /include      # Remove header files
+      - /lib/debug    # Remove debug files
+
+  # TODO: Add x-checker-data
+  # ImageMagick for converting icos pngs
+  - name: ImageMagick
+    sources:
+      - type: git
+        url: https://github.com/ImageMagick/ImageMagick.git
+        tag: 7.1.1-36
+    cleanup:
+      - /share/docs   # Remove documentation files
+      - '*.la'        # Remove libtool archive files
+      - '*.a'         # Remove static library files
+      - /include      # Remove header files
+      - /lib/debug    # Remove debug files
 
