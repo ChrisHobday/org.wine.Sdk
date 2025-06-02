@@ -620,3 +620,18 @@ modules:
 
         install -Dm755 DXVKToWine.sh -t ${FLATPAK_DEST}/bin/ # Install script for switching Wine prefix to DXVK
         install -Dm755 WineToDXVK.sh -t ${FLATPAK_DEST}/bin/ # Install script for switching Wine prefix to default Wine dlls
+
+  # RPC-Bridge for enabling Discord Rich Presence with Wine apps
+  - name: RPC-Bridge
+    sources:
+      - type: git
+        url: https://github.com/EnderIce2/rpc-bridge.git
+        tag: v1.4.0.0
+    build-options:
+      prepend-path: /usr/lib/sdk/mingw-w64/bin # /usr/lib/sdk/mingw-w64/bin contains x86_64-w64-mingw32-gcc and i686-w64-minigw32-gcc compilers from sdk-extension org.freedesktop.Sdk.Extension.mingw-w64
+    buildsystem: simple
+    build-commands:
+      - |
+        make -j`nproc --ignore=2`                      # Build using the number of available cores minus 2
+        install -Dm755 build/* -t ${FLATPAK_DEST}/bin/ # Install all built files
+
