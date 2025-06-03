@@ -4,8 +4,11 @@
   <name>Wine Sdk</name>
   <summary>Wine Sdk</summary>
   <releases>
-    <release version="10.8" date="2025-05-23">
+    <release version="10.9" date="2025-06-03">
       <description></description>
+    </release>
+    <release version="10.8" date="2025-05-23">
+      <description/>
     </release>
   </releases>
 </component>
