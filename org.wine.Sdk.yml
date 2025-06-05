@@ -16,7 +16,7 @@ sdk-extensions:
   # - org.freedesktop.Sdk.Docs
   - org.freedesktop.Sdk.Compat.i386              # Needed for building 32bit Wine
   - org.freedesktop.Sdk.Extension.toolchain-i386 # Needed for building 32bit Wine
-  - org.freedesktop.Sdk.Extension.mingw-w64      # Needed for cross-compiling 32/64bit Wine (Compiling Wine Windows dlls)
+  - org.freedesktop.Sdk.Extension.mingw-w64      # Needed for cross-compiling 32/64bit Wine (Compiling Wine Windows dlls, and rpc-bridge)
 
 # platform-extensions:
 #   - org.freedesktop.Platform.Locale
@@ -592,7 +592,7 @@ modules:
         install -Dm755 DXVKToWine.sh -t ${FLATPAK_DEST}/bin/ # Install script for switching Wine prefix to DXVK
         install -Dm755 WineToDXVK.sh -t ${FLATPAK_DEST}/bin/ # Install script for switching Wine prefix to default Wine dlls
 
-  # RPC-Bridge for enabling Discord Rich Presence with Wine apps
+  # For enabling Discord Rich Presence with Wine apps
   - name: rpc-bridge
     sources:
       - type: git
@@ -610,7 +610,7 @@ modules:
         make -j`nproc --ignore=2`                      # Build using the number of available cores minus 2
         install -Dm755 build/* -t ${FLATPAK_DEST}/bin/ # Install all built files
 
-  # Icoutils for extracting icos from exes
+  # For extracting icons from exes
   - name: icoutils
     sources:
       - type: archive
@@ -627,7 +627,7 @@ modules:
       - /include      # Remove header files
       - /lib/debug    # Remove debug files
 
-  # ImageMagick for converting icos pngs
+  # For converting icons to PNGs and SVGs
   - name: imagemagick
     sources:
       - type: git
@@ -637,6 +637,24 @@ modules:
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
           tag-pattern: ^(\d[\d\.]+\d-\d+)$ # Regex pattern that matches latest git tag and compares it to source
+    cleanup:
+      - /share/docs   # Remove documentation files
+      - '*.la'        # Remove libtool archive files
+      - '*.a'         # Remove static library files
+      - /include      # Remove header files
+      - /lib/debug    # Remove debug files
+
+  # For converting icons to SVGs (An optional ImageMagick delegate)
+  - name: potrace
+    sources:
+      - type: archive
+        url: https://potrace.sourceforge.net/download/1.16/potrace-1.16.tar.gz
+        sha256: be8248a17dedd6ccbaab2fcc45835bb0502d062e40fbded3bc56028ce5eb7acc
+        x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+          type: html
+          url: https://potrace.sourceforge.net/                                                   # Use this file to...
+          version-pattern: /potrace-(\d[\d\.]+\d).tar.gz                                          # Search for this regex pattern
+          url-template: https://potrace.sourceforge.net/download/$version/potrace-$version.tar.gz # Compare this file (found using regex match from above) to the source to see if there is a newer version
     cleanup:
       - /share/docs   # Remove documentation files
       - '*.la'        # Remove libtool archive files
