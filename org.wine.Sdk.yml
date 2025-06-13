@@ -9,7 +9,6 @@ finish-args:
   - --sdk=org.wine.Sdk//10.9
   - --runtime=org.wine.Platform//10.9
   - --socket=pcsc # Child apps will need to enable this to access smartcards
-
 sdk-extensions:
   # - org.freedesktop.Sdk.Debug
   # - org.freedesktop.Sdk.Locale
@@ -17,10 +16,8 @@ sdk-extensions:
   - org.freedesktop.Sdk.Compat.i386              # Needed for building 32bit Wine
   - org.freedesktop.Sdk.Extension.toolchain-i386 # Needed for building 32bit Wine
   - org.freedesktop.Sdk.Extension.mingw-w64      # Needed for cross-compiling 32/64bit Wine (Compiling Wine Windows dlls, and rpc-bridge)
-
 # platform-extensions:
 #   - org.freedesktop.Platform.Locale
-
 inherit-extensions:
   # Re-export org.freedesktop.Platform extensions for child Apps to inherit
   - org.freedesktop.Platform.GL          # OpenGL
@@ -30,10 +27,8 @@ inherit-extensions:
   - org.freedesktop.Platform.GStreamer
   - org.freedesktop.Platform.openh264
   - org.freedesktop.Platform.Icontheme
-
 # inherit-sdk-extensions:
 #   - org.freedesktop.Sdk.Extension
-
 add-extensions:
   # Re-export org.freedesktop.Platform extensions for child Apps to inherit
   org.freedesktop.Platform.Compat.i386:       # 32bit Linux compatibility
@@ -89,13 +84,10 @@ add-extensions:
     add-ld-path: .
     version: *runtime-version
     autodelete: false
-
 # cleanup-commands:
 #   - /usr/libexec/freedesktop-post.sh # Pre-packaged script that sets up stuff (Not sure if still required)
-
 # cleanup-platform-commands:
 #   - /usr/libexec/freedesktop-post.sh # Pre-packaged script that sets up stuff (Not sure if still required)
-
 # YAML Anchor for 32bit build options, to be referred to by 32bit modules below (Avoids needing to rewrite this out for each 32bit module)
 x-compat-i386-build-options: &compat-i386-build-options
   prepend-path: /usr/lib/sdk/toolchain-i386/bin                                   # /usr/lib/sdk/toolchain-i386/bin contains gnu 32bit libs needed for compiling
@@ -106,7 +98,6 @@ x-compat-i386-build-options: &compat-i386-build-options
     CC: ccache i686-unknown-linux-gnu-gcc  # Compile C with GCC using ccache
     CXX: ccache i686-unknown-linux-gnu-g++ # Compile C++ with G++ using ccache
     x86_64_CC: ccache i686-w64-mingw32-gcc # Cross-compile C with x86_64-w64-mingw32-gcc using ccache
-
 modules:
   # Setting up required stuff
   - name: Setup
@@ -169,8 +160,8 @@ modules:
     sources:
       - type: git
         url: https://github.com/KhronosGroup/OpenCL-Headers.git
-        tag: v2024.10.24
-        commit: 4ea6df132107e3b4b9407f903204b5522fdffcd6
+        tag: v2025.06.13
+        commit: 2e30669d48718fd460f085b4b35b160dad51ce9d
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
           tag-pattern: ^v(\d[\d\.]+\d)$ # Regex pattern that matches latest git tag and compares it to source
@@ -382,8 +373,8 @@ modules:
   - name: samba
     sources: &samba-sources
       - type: archive
-        url: https://download.samba.org/pub/samba/stable/samba-4.22.1.tar.gz
-        sha256: 6a1f89f1ab25916e255f1c2c3a4a88235a854af2eca40bb9d9bba7545b684a0a
+        url: https://download.samba.org/pub/samba/stable/samba-4.22.2.tar.gz
+        sha256: d9ac8e224a200159e62c651cf42307dc162212ec25d04eb6800b9a7ccfbcc3c1
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: html
           url: https://download.samba.org/pub/samba/stable/ # Use this file to...
@@ -567,8 +558,8 @@ modules:
   - name: dxvk
     sources:
       - type: archive
-        url: https://github.com/doitsujin/dxvk/releases/download/v2.6.1/dxvk-2.6.1.tar.gz
-        sha256: 7ee0bef415910c943d3bda47d9d6821b9c8ca7a74f1e9f6151707d268cf3ce7f
+        url: https://github.com/doitsujin/dxvk/releases/download/v2.6.2/dxvk-2.6.2.tar.gz
+        sha256: 17761876556afd55736cb895d184f5a1c55d43350f1b1e3b129f8d28706d7992
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: html
           url: https://github.com/doitsujin/dxvk/tags                                                      # Use this file to...
@@ -644,6 +635,7 @@ modules:
       - /include      # Remove header files
       - /lib/debug    # Remove debug files
 
+  # TODO: Find a way to convert to SVG without loosing color
   # For converting icons to SVGs (An optional ImageMagick delegate)
   - name: potrace
     sources:
