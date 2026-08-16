@@ -1,13 +1,13 @@
 build-runtime: true
 id: org.wine.Sdk
 id-platform: org.wine.Platform
-branch: &app-version '11.14'
+branch: &app-version '11.15'
 sdk: org.freedesktop.Sdk
 runtime: org.freedesktop.Platform
 runtime-version: &runtime-version '25.08'
 finish-args:
-  - --sdk=org.wine.Sdk//11.14
-  - --runtime=org.wine.Platform//11.14
+  - --sdk=org.wine.Sdk//11.15
+  - --runtime=org.wine.Platform//11.15
 sdk-extensions:
   # - org.freedesktop.Sdk.Debug
   # - org.freedesktop.Sdk.Locale
