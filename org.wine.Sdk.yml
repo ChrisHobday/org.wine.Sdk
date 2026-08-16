@@ -114,7 +114,8 @@ modules:
           --prefix=${FLATPAK_DEST}            `# Set prefix to Flatpak root (/usr for an SDK)` \
           --enable-archs=arm64ec,aarch64,i386 `# Set flag to compile all Windows backend support (i386 - 32bit x86 dlls, x86_64 - 64bit x64 dll, arm - 32bit arm dlls, aarch64 - 64bit arm dlls, arm64ec - 32/64bit x86_64 to 64bit arm translation dlls) (arm flag currently causes errors)` \
           --with-mingw=clang \
-          --disable-tests                     `# Don't run tests (Causes errors with llvm)`
+          --disable-tests                     `# Don't run tests (Causes errors with llvm)` \
+          --without-opencl
         make -j`nproc`                         # Build 32/64 bit Wine using number of available cores
         make install
         cd ..
