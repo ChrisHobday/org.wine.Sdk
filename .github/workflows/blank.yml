@@ -1,0 +1,63 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 340  # stay under the 360min default ceiling, but be explicit
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache
+          df -h
+
+      - name: Install flatpak-builder
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder
+
+      - name: Install required SDK/runtime + extensions
+        run: |
+          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo # Add Flathub repo
+          sudo flatpak install -y --noninteractive flathub \
+            org.freedesktop.Sdk//25.08 \
+            org.freedesktop.Platform//25.08 \
+            org.freedesktop.Sdk.Extension.mingw-w64//25.08 \
+            org.freedesktop.Sdk.Extension.vala//25.08 \
+            org.freedesktop.Sdk.Extension.llvm21//25.08
+
+      - name: Cache flatpak-builder state
+        uses: actions/cache@v4
+        with:
+          path: .flatpak-builder
+          key: flatpak-builder-${{ hashFiles('org.wine.Sdk.yml') }}
+          restore-keys: |
+            flatpak-builder-
+
+      - name: Build
+        run: |
+          flatpak-builder --force-clean --repo=repo build-dir org.wine.Sdk.yml
+
+      - name: Upload build output
+        if: always()  # grab logs/output even on failure, for debugging
+        uses: actions/upload-artifact@v4
+        with:
+          name: wine-sdk-build
+          path: |
+            repo/
+          retention-days: 3
