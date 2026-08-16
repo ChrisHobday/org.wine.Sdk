@@ -1,0 +1,185 @@
+build-runtime: true
+id: org.wine.Sdk
+id-platform: org.wine.Platform
+branch: &app-version '11.14'
+sdk: org.freedesktop.Sdk
+runtime: org.freedesktop.Platform
+runtime-version: &runtime-version '25.08'
+finish-args:
+  - --sdk=org.wine.Sdk//11.14
+  - --runtime=org.wine.Platform//11.14
+sdk-extensions:
+  # - org.freedesktop.Sdk.Debug
+  # - org.freedesktop.Sdk.Locale
+  # - org.freedesktop.Sdk.Docs
+  - org.freedesktop.Sdk.Extension.mingw-w64 # Needed for cross-compiling 32/64bit Wine (Compiling Wine Windows dlls, and rpc-bridge)
+  - org.freedesktop.Sdk.Extension.vala      # Needed for building msitools
+  - org.freedesktop.Sdk.Extension.llvm21    # Needed for building many ARM modules, since GCC isn't supported while Cland is
+# platform-extensions:
+#   - org.freedesktop.Platform.Locale
+inherit-extensions:
+  # Re-export org.freedesktop.Platform extensions for child Apps to inherit
+  - org.freedesktop.Platform.GL           # OpenGL
+  - org.freedesktop.Platform.VulkanLayer
+  - org.freedesktop.Platform.Timezones
+  - org.freedesktop.Platform.GStreamer
+  - org.freedesktop.Platform.codecs-extra
+  - org.freedesktop.Platform.Icontheme
+# inherit-sdk-extensions:
+#   - org.freedesktop.Sdk.Extension
+add-extensions:
+  # Re-export org.freedesktop.Platform extensions for child Apps to inherit
+  org.freedesktop.Platform.codecs-extra: # Codecs (replaces ffmpeg-full & openh264)
+    directory: lib/codecs
+    add-ld-path: lib
+    version: 25.08-extra
+    autodelete: false
+# cleanup-commands:
+#   - /usr/libexec/freedesktop-post.sh # Pre-packaged script that sets up stuff (Not sure if still required)
+# cleanup-platform-commands:
+#   - /usr/libexec/freedesktop-post.sh # Pre-packaged script that sets up stuff (Not sure if still required)
+modules:
+  # Setting up required stuff
+  - name: Setup
+    buildsystem: simple
+    build-commands:
+      - |
+        # Make directories needed by extensions
+        mkdir -p ${FLATPAK_DEST}/lib/codecs                      # Codecs (replaces ffmpeg-full & openh264)
+        mkdir -p ${FLATPAK_DEST}/lib/ffmpeg                      # FFmpeg (Not sure if still needed codecs-extra replaced ffmpeg in 25.08)
+
+        # Make docs directories needed by modules
+        mkdir -p /usr/share/runtime/docs/man                     # /usr/share/man symlinks here but it is not created by default and can cause errors when building modules
+        mkdir -p /usr/share/runtime/docs/info                    # /usr/share/info symlinks here but it is not created by default and can cause errors when building modules
+        mkdir -p /usr/share/runtime/docs/doc                     # /usr/share/doc symlinks here but it is not created by default and can cause errors when building modules
+        mkdir -p /usr/share/runtime/docs/ri                      # /usr/share/ri symlinks here but it is not created by default and can cause errors when building modules
+
+        # Make locale directories needed by modules
+        pushd /usr/share/locale                                  # Change to /usr/share/locale directory, and store current directory to be popd back to below
+        for link in `find . -type l`; do                         # For each symlink in /usr/share/locale
+          mkdir -p $(readlink  $link)                            # Make the directory the symlink is pointing to (If it doesn't already exist)
+        done
+        popd                                                     # Change back to starting directory (location where last pushd was used above)
+
+  # Needed for compiling the fex-wine .dlls
+  - name: llvm-mingw-toolchain
+    buildsystem: simple
+    sources:
+      - type: archive
+        url: https://github.com/mstorsjo/llvm-mingw/releases/download/20260616/llvm-mingw-20260616-ucrt-ubuntu-22.04-aarch64.tar.xz
+        sha256: e7e5d135d93d3f2a3beaaea633a5b0e66ac75391a53feae654391913dd76102b
+    build-commands:
+      - |
+        mkdir -p ${FLATPAK_DEST}/lib/llvm-mingw
+        # Release tarballs wrap everything in one top-level folder matching the release
+        # name (e.g. llvm-mingw-20260616-ucrt-ubuntu-22.04-aarch64/bin/...), not a flat
+        # bin/ at the archive root — flatten it so append-path references below resolve.
+        if [ -d */bin ]; then
+          cp -r */. ${FLATPAK_DEST}/lib/llvm-mingw/
+        else
+          cp -r . ${FLATPAK_DEST}/lib/llvm-mingw/
+        fi
+        # Sanity check this actually worked, so a build failure here is loud and clear
+        # rather than silently producing an empty/wrong toolchain directory that only
+        # surfaces as a confusing "compiler not found" error three modules later.
+        test -x ${FLATPAK_DEST}/lib/llvm-mingw/bin/aarch64-w64-mingw32-clang
+        test -x ${FLATPAK_DEST}/lib/llvm-mingw/bin/arm64ec-w64-mingw32-clang
+
+  # Wine
+  - name: wine
+    sources:
+      - type: git
+        url: https://gitlab.winehq.org/wine/wine.git
+        tag: wine-11.15
+        commit: 2df1ee28039cf84776eb1421ed90bd154cebb65f
+        x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+          type: git
+          tag-pattern: ^wine-(\d+\.\d+)$ # Regex pattern that matches latest git tag and compares it to source
+          is-main-source: true
+
+      - type: file
+        path: org.wine.Sdk.metainfo.xml
+
+      - type: file
+        path: org.wine.Platform.metainfo.xml
+    buildsystem: simple
+    build-commands:
+      - |
+        set -e
+        PATH=$PATH:/usr/lib/llvm-mingw/bin:/usr/lib/sdk/mingw-w64/bin:/usr/lib/sdk/toolchain-i386/bin:/usr/lib/sdk/llvm21/bin # Add to PATH, /usr/lib/sdk/mingw-w64/bin contains x86_64-w64-mingw32-gcc and i686-w64-mingw32-gcc compilers from sdk-extension org.freedesktop.Sdk.Extension.mingw-w64, and /usr/lib/sdk/toolchain-i386/bin contains gnu 32bit libs (needed for building the 32bit version of Wine) from org.freedesktop.Sdk.Extension.toolchain-i386
+
+        mkdir wine # Make directory for building Wine
+        cd wine
+        ../configure                          `# Generate makefile with following flags` \
+          --prefix=${FLATPAK_DEST}            `# Set prefix to Flatpak root (/usr for an SDK)` \
+          --enable-archs=arm64ec,aarch64,i386 `# Set flag to compile all Windows backend support (i386 - 32bit x86 dlls, x86_64 - 64bit x64 dll, arm - 32bit arm dlls, aarch64 - 64bit arm dlls, arm64ec - 32/64bit x86_64 to 64bit arm translation dlls) (arm flag currently causes errors)` \
+          --with-mingw=clang \
+          --disable-tests                     `# Don't run tests (Causes errors with llvm)`
+        make -j`nproc`                         # Build 32/64 bit Wine using number of available cores
+        make install
+        cd ..
+
+        install -Dm644 org.wine.Sdk.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo/      # Install SDK metainfo
+        install -Dm644 org.wine.Platform.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo/ # Install Platform metainfo
+    cleanup:
+      - /share/docs     # Remove documentation files
+      - /share/examples # Remove example files
+      - '*.la'          # Remove libtool archive files
+      - '*.a'           # Remove static library files
+      - /include        # Remove header files
+      - /lib/debug      # Remove debug files
+
+  - name: fex-wine
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/llvm-mingw/bin:/usr/lib/sdk/llvm21/bin:/usr/lib/sdk/mingw-w64/bin
+      prepend-ld-library-path: /usr/lib/sdk/llvm21/lib
+      env:
+        CC: clang
+        CXX: clang++
+    sources:
+      - type: git
+        url: https://github.com/FEX-Emu/FEX.git
+        tag: FEX-2608
+        submodules: true
+        x-checker-data:
+          type: git
+          tag-pattern: ^FEX-(\d+(\.\d+)?)$
+    build-commands:
+      - |
+        unset CFLAGS CXXFLAGS LDFLAGS ASFLAGS # Unset default Flatpak flags (They cause errors here)
+
+        # WoW64 (32-bit) backend -> xtajit.dll
+        mkdir build-wow64
+        cd build-wow64
+        cmake -GNinja \
+          -DCMAKE_TOOLCHAIN_FILE=../Data/CMake/toolchain_mingw.cmake \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DMINGW_TRIPLE=aarch64-w64-mingw32 \
+          -DENABLE_LTO=False \
+          -DBUILD_TESTS=False \
+          -DBUILD_TESTING=False \
+          -DENABLE_JEMALLOC_GLIBC_ALLOC=False \
+          -DTUNE_CPU=none \
+          ..
+        ninja wow64fex
+        install -Dm755 Bin/libwow64fex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit.dll # Install/rename the wow64 fex-wine dll in place of the Windows expected xtajit dll
+        cd ..
+ 
+        # ARM64EC (64-bit) backend -> xtajit64.dll — the one winewayland_test_64.exe needs
+        mkdir build-arm64ec
+        cd build-arm64ec
+        cmake -GNinja \
+          -DCMAKE_TOOLCHAIN_FILE=../Data/CMake/toolchain_mingw.cmake \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DMINGW_TRIPLE=arm64ec-w64-mingw32 \
+          -DENABLE_LTO=False \
+          -DBUILD_TESTS=False \
+          -DBUILD_TESTING=False \
+          -DENABLE_JEMALLOC_GLIBC_ALLOC=False \
+          -DTUNE_CPU=none \
+          ..
+        ninja arm64ecfex
+        install -Dm755 Bin/libarm64ecfex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit64.dll # Install/rename the arm64ec fex-wine dll in place of the Windows expected xtajit64 dll
+        cd ..
+
