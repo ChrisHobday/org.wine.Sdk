@@ -57,7 +57,7 @@ jobs:
         if: always()  # grab logs/output even on failure, for debugging
         uses: actions/upload-artifact@v4
         with:
-          name: wine-sdk-build
+          name: repo
           path: |
             repo/
           retention-days: 3
