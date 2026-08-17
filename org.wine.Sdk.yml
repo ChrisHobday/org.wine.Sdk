@@ -4,9 +4,27 @@ build-runtime: true
 sdk: org.freedesktop.Sdk
 runtime: org.freedesktop.Platform
 runtime-version: &runtime-version '25.08'
-sdk-extensions:
-  - org.freedesktop.Sdk.Extension.mingw-w64
 modules:
+  - name: llvm-mingw
+    only-arches:
+      - aarch64
+    sources:
+      - type: archive
+        url: https://github.com/mstorsjo/llvm-mingw/releases/download/20260616/llvm-mingw-20260616-ucrt-ubuntu-22.04-aarch64.tar.xz
+        sha256: e7e5d135d93d3f2a3beaaea633a5b0e66ac75391a53feae654391913dd76102b
+        strip-components: 1
+        x-checker-data:
+          type: json
+          url: https://api.github.com/repos/mstorsjo/llvm-mingw/releases/latest
+          tag-query: .tag_name
+          version-query: .tag_name
+          url-query: >-
+            .assets[] | select(.name == "llvm-mingw-" + $version + "-ucrt-ubuntu-22.04-aarch64.tar.xz") | .browser_download_url
+    buildsystem: simple
+    build-commands:
+      - mkdir -p ${FLATPAK_DEST}/lib/llvm-mingw
+      - cp -a . ${FLATPAK_DEST}/lib/llvm-mingw/
+
   - name: wine
     sources:
       - type: git
@@ -20,19 +38,19 @@ modules:
     build-options:
       arch:
         aarch64:
-          append-path: /usr/lib/sdk/mingw-w64/bin
+          append-path: /usr/lib/llvm-mingw/bin
           config-opts:
             - --enable-archs=aarch64
-            - --with-mingw="ccache aarch64-w64-mingw32-gcc"
+            - --with-mingw=aarch64-w64-mingw32-clang
             - --disable-winemenubuilder
             - --disable-tests
           libdir: /usr/lib
       env:
         LIBDIR: lib
     make-install-args:
-      - LDCONFIG=/bin/true
-      - UPDATE_DESKTOP_DATABASE=/bin/true
-      - INSTALL_PROGRAM_FLAGS=-s
+      - LDCONFIG=/bin/true                # When make install calls ldconfig return true (The default can cause problems when building in a Flatpak)
+      - UPDATE_DESKTOP_DATABASE=/bin/true # When make install calls update-desktop-database return true (The default can cause problems when building in a Flatpak)
+      - INSTALL_PROGRAM_FLAGS=-s          # Strip debug symbols from binaries when installed
     cleanup:
       - '*.a'
       - '*.la'
