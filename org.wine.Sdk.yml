@@ -5,6 +5,28 @@ sdk: org.freedesktop.Sdk
 runtime: org.freedesktop.Platform
 runtime-version: &runtime-version '25.08'
 modules:
+  # Setting up required stuff
+  - name: Setup
+    buildsystem: simple
+    build-commands:
+      - |
+        # Make directories needed by extensions
+        mkdir -p ${FLATPAK_DEST}/lib/codecs                      # Codecs (replaces ffmpeg-full & openh264)
+        mkdir -p ${FLATPAK_DEST}/lib/ffmpeg                      # FFmpeg (Not sure if still needed codecs-extra replaced ffmpeg in 25.08)
+
+        # Make docs directories needed by modules
+        mkdir -p /usr/share/runtime/docs/man                     # /usr/share/man symlinks here but it is not created by default and can cause errors when building modules
+        mkdir -p /usr/share/runtime/docs/info                    # /usr/share/info symlinks here but it is not created by default and can cause errors when building modules
+        mkdir -p /usr/share/runtime/docs/doc                     # /usr/share/doc symlinks here but it is not created by default and can cause errors when building modules
+        mkdir -p /usr/share/runtime/docs/ri                      # /usr/share/ri symlinks here but it is not created by default and can cause errors when building modules
+
+        # Make locale directories needed by modules
+        pushd /usr/share/locale                                  # Change to /usr/share/locale directory, and store current directory to be popd back to below
+        for link in `find . -type l`; do                         # For each symlink in /usr/share/locale
+          mkdir -p $(readlink  $link)                            # Make the directory the symlink is pointing to (If it doesn't already exist)
+        done
+        popd                                                     # Change back to starting directory (location where last pushd was used above)
+
   - name: llvm-mingw
     only-arches:
       - aarch64
