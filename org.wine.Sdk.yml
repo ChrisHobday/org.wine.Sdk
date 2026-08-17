@@ -44,6 +44,7 @@ modules:
             - --with-mingw=aarch64-w64-mingw32-clang
             - --disable-winemenubuilder
             - --disable-tests
+            - --disable-opencl
           libdir: /usr/lib
       env:
         LIBDIR: lib
