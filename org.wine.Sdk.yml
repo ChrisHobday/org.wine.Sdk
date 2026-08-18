@@ -59,6 +59,7 @@ modules:
           tag-pattern: ^wine-(\d+\.\d+)$ # Regex pattern that matches latest git tag and compares it to source
           is-main-source: true
     build-options:
+      no-debuginfo: true # Keep debug symbols
       arch:
         aarch64:
           append-path: /usr/lib/llvm-mingw/bin
