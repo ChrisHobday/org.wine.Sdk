@@ -52,8 +52,8 @@ modules:
     sources:
       - type: git
         url: https://gitlab.winehq.org/wine/wine.git
-        tag: wine-11.0
-        commit: db11d0fe6a169c457e23d007e20404643d067aa8
+        tag: wine-11.15
+        commit: 2df1ee28039cf84776eb1421ed90bd154cebb65f
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
           tag-pattern: ^wine-(\d+\.\d+)$ # Regex pattern that matches latest git tag and compares it to source
