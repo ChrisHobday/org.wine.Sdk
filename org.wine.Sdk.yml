@@ -74,7 +74,7 @@ modules:
     make-install-args:
       - LDCONFIG=/bin/true                # When make install calls ldconfig return true (The default can cause problems when building in a Flatpak)
       - UPDATE_DESKTOP_DATABASE=/bin/true # When make install calls update-desktop-database return true (The default can cause problems when building in a Flatpak)
-      - INSTALL_PROGRAM_FLAGS=-s          # Strip debug symbols from binaries when installed
+      # - INSTALL_PROGRAM_FLAGS=-s          # Strip debug symbols from binaries when installed
     cleanup:
       - '*.a'
       - '*.la'
