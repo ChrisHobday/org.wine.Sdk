@@ -117,8 +117,7 @@ modules:
           -DENABLE_LTO=False \
           -DBUILD_TESTS=False \
           -DBUILD_TESTING=False \
-          -DENABLE_QT_GUI=False \
-          -DBUILD_GUI=False \
+          -DBUILD_FEXCONFIG=False \
           ..
         ninja FEXServer FEXInterpreter FEXLoader FEXHeaderCheck
         ls -la bin/ # Debugging
