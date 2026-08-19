@@ -59,12 +59,13 @@ modules:
           tag-pattern: ^wine-(\d+\.\d+)$ # Regex pattern that matches latest git tag and compares it to source
           is-main-source: true
     build-options:
-      no-debuginfo: true # Keep debug symbols
+      # no-debuginfo: true # Keep debug symbols in main org.wine.Sdk, instead of the Flatpak default of putting them in org.wine.Sdk.Debug extension
       arch:
         aarch64:
-          append-path: /usr/lib/llvm-mingw/bin
+          append-path: /usr/lib/llvm-mingw/bin # Add llvm-mingw compiler to the path
           config-opts:
-            - --enable-archs=aarch64
+            - --prefix=${FLATPAK_DEST}
+            - --enable-archs=aarch64,arm64ec,i386
             - --with-mingw=aarch64-w64-mingw32-clang
             - --disable-winemenubuilder
             - --disable-tests
@@ -72,11 +73,11 @@ modules:
           libdir: /usr/lib
       env:
         LIBDIR: lib
-        CFLAGS: -fno-stack-protector # Override org.freedesktop.Sdk -fstack-protector-strong (Causes segfaults on ARM without this)
+        CFLAGS: -fno-stack-protector # Override org.freedesktop.Sdk default -fstack-protector-strong (Can cause segmentation faults on ARM without this)
     make-install-args:
-      - LDCONFIG=/bin/true                # When make install calls ldconfig return true (The default can cause problems when building in a Flatpak)
-      - UPDATE_DESKTOP_DATABASE=/bin/true # When make install calls update-desktop-database return true (The default can cause problems when building in a Flatpak)
-      # - INSTALL_PROGRAM_FLAGS=-s          # Strip debug symbols from binaries when installed
+      - LDCONFIG=/bin/true                # When make install calls ldconfig return true (Default can cause problems when building in a Flatpak)
+      - UPDATE_DESKTOP_DATABASE=/bin/true # When make install calls update-desktop-database return true (Default can cause problems when building in a Flatpak)
+      - INSTALL_PROGRAM_FLAGS=-s          # Strip debug symbols from binaries when installed (Smaller install size at the cost of harder debugging)
     cleanup:
       - '*.a'
       - '*.la'
