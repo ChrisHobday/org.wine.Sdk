@@ -118,12 +118,15 @@ modules:
           -DBUILD_TESTS=False \
           -DBUILD_TESTING=False \
           ..
-        ninja FEXServer FEXInterpreter
+        ninja FEXServer FEXInterpreter FEXLoader FEXHeaderCheck
+        ls -la bin/ # Debugging
         install -Dm755 Bin/FEXServer ${FLATPAK_DEST}/bin/FEXServer
         install -Dm755 Bin/FEXInterpreter ${FLATPAK_DEST}/bin/FEXInterpreter
+        install -Dm755 Bin/FEXLoader ${FLATPAK_DEST}/bin/FEXLoader
+        install -Dm755 Bin/FEXHeaderCheck ${FLATPAK_DEST}/bin/FEXHeaderCheck
         cd ..
 
-        # WoW64 32bit backend
+        # WoW64 32bit backend (Allows running 32bit x86 dll/exe)
         mkdir build-wow64
         cd build-wow64
         cmake -GNinja \
@@ -138,9 +141,10 @@ modules:
           ..
         ninja wow64fex
         install -Dm755 Bin/libwow64fex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit.dll # Install/rename the wow64 fex-wine dll in place of the Windows expected xtajit dll
+        cp -a Bin/*.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/
         cd ..
  
-        # ARM64EC 64bit backend
+        # ARM64EC 64bit backend (Allows running 64bit x86 dll/exe)
         mkdir build-arm64ec
         cd build-arm64ec
         cmake -GNinja \
@@ -155,4 +159,5 @@ modules:
           ..
         ninja arm64ecfex
         install -Dm755 Bin/libarm64ecfex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit64.dll # Install/rename the arm64ec fex-wine dll in place of the Windows expected xtajit64 dll
+        cp -a Bin/*.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/
         cd ..
