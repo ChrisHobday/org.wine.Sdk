@@ -72,6 +72,7 @@ modules:
           libdir: /usr/lib
       env:
         LIBDIR: lib
+        CFLAGS: -fno-stack-protector # Override org.freedesktop.Sdk -fstack-protector-strong (Causes segfaults on ARM without this)
     make-install-args:
       - LDCONFIG=/bin/true                # When make install calls ldconfig return true (The default can cause problems when building in a Flatpak)
       - UPDATE_DESKTOP_DATABASE=/bin/true # When make install calls update-desktop-database return true (The default can cause problems when building in a Flatpak)
