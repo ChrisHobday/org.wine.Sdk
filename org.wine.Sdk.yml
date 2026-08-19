@@ -5,6 +5,8 @@ build-runtime: true
 sdk: org.freedesktop.Sdk
 runtime: org.freedesktop.Platform
 runtime-version: &runtime-version '25.08'
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.mingw-w64 # Needed for cross-compiling 32/64bit Wine (Compiling Wine Windows dlls, fex-wine and rpc-bridge)
 modules:
   # Setting up required stuff
   - name: Setup
@@ -66,7 +68,7 @@ modules:
           config-opts:
             - --prefix=${FLATPAK_DEST}
             - --enable-archs=aarch64,arm,arm64ec,i386 # Build for aarch64 - 64bit ARM dll/exe, arm - 32bit ARM dll/exe, arm64ec - Native 64bit x86 Windows dll/exe rebuilt for running on ARM, i386 - 32bit x86 dll/exe
-            - --with-mingw=clang
+            - --with-mingw=clang                      # Use LLVM/Clang compilers (Some --enable-archs require this)
             - --disable-winemenubuilder
             - --disable-tests
             - --disable-opencl
@@ -86,3 +88,57 @@ modules:
       - /share/man
       - /include
       - /lib/pkgconfig
+
+  - name: fex-wine
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/llvm-mingw/bin:/usr/lib/sdk/llvm21/bin:/usr/lib/sdk/mingw-w64/bin
+      prepend-ld-library-path: /usr/lib/sdk/llvm21/lib
+      env:
+        CC: clang
+        CXX: clang++
+    sources:
+      - type: git
+        url: https://github.com/FEX-Emu/FEX.git
+        tag: FEX-2608
+        submodules: true
+        x-checker-data:
+          type: git
+          tag-pattern: ^FEX-(\d+(\.\d+)?)$
+    build-commands:
+      - |
+        unset CFLAGS CXXFLAGS LDFLAGS ASFLAGS # Unset default Flatpak flags (They cause errors here)
+
+        # WoW64 (32-bit) backend -> xtajit.dll
+        mkdir build-wow64
+        cd build-wow64
+        cmake -GNinja \
+          -DCMAKE_TOOLCHAIN_FILE=../Data/CMake/toolchain_mingw.cmake \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DMINGW_TRIPLE=aarch64-w64-mingw32 \
+          -DENABLE_LTO=False \
+          -DBUILD_TESTS=False \
+          -DBUILD_TESTING=False \
+          -DENABLE_JEMALLOC_GLIBC_ALLOC=False \
+          -DTUNE_CPU=none \
+          ..
+        ninja wow64fex
+        install -Dm755 Bin/libwow64fex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit.dll # Install/rename the wow64 fex-wine dll in place of the Windows expected xtajit dll
+        cd ..
+ 
+        # ARM64EC (64-bit) backend -> xtajit64.dll — the one winewayland_test_64.exe needs
+        mkdir build-arm64ec
+        cd build-arm64ec
+        cmake -GNinja \
+          -DCMAKE_TOOLCHAIN_FILE=../Data/CMake/toolchain_mingw.cmake \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DMINGW_TRIPLE=arm64ec-w64-mingw32 \
+          -DENABLE_LTO=False \
+          -DBUILD_TESTS=False \
+          -DBUILD_TESTING=False \
+          -DENABLE_JEMALLOC_GLIBC_ALLOC=False \
+          -DTUNE_CPU=none \
+          ..
+        ninja arm64ecfex
+        install -Dm755 Bin/libarm64ecfex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit64.dll # Install/rename the arm64ec fex-wine dll in place of the Windows expected xtajit64 dll
+        cd ..
