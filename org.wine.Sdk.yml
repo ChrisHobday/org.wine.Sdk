@@ -109,7 +109,7 @@ modules:
       - |
         unset CFLAGS CXXFLAGS LDFLAGS ASFLAGS # Unset default Flatpak flags (They cause errors here)
 
-        # WoW64 (32-bit) backend -> xtajit.dll
+        # WoW64 32bit backend
         mkdir build-wow64
         cd build-wow64
         cmake -GNinja \
@@ -122,11 +122,13 @@ modules:
           -DENABLE_JEMALLOC_GLIBC_ALLOC=False \
           -DTUNE_CPU=none \
           ..
-        ninja wow64fex
+        ninja FEXServer FEXInterpreter wow64fex
+        install -Dm755 Bin/FEXServer ${FLATPAK_DEST}/bin/FEXServer
+        install -Dm755 Bin/FEXInterpreter ${FLATPAK_DEST}/bin/FEXInterpreter
         install -Dm755 Bin/libwow64fex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit.dll # Install/rename the wow64 fex-wine dll in place of the Windows expected xtajit dll
         cd ..
  
-        # ARM64EC (64-bit) backend -> xtajit64.dll — the one winewayland_test_64.exe needs
+        # ARM64EC 64bit backend
         mkdir build-arm64ec
         cd build-arm64ec
         cmake -GNinja \
