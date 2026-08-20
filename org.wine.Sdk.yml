@@ -123,10 +123,9 @@ modules:
           -DBUILD_TESTING=False \
           -DBUILD_FEXCONFIG=False \
           ..
-        ninja FEXServer FEXInterpreter FEXLoader FEXHeaderCheck
-        ls -la bin/ # Debugging
+        ninja FEXServer FEXLoader FEXHeaderCheck
+        ls -la  # Debugging
         install -Dm755 Bin/FEXServer ${FLATPAK_DEST}/bin/FEXServer
-        install -Dm755 Bin/FEXInterpreter ${FLATPAK_DEST}/bin/FEXInterpreter
         install -Dm755 Bin/FEXLoader ${FLATPAK_DEST}/bin/FEXLoader
         install -Dm755 Bin/FEXHeaderCheck ${FLATPAK_DEST}/bin/FEXHeaderCheck
         cd ..
