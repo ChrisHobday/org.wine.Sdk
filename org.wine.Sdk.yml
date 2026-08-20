@@ -66,93 +66,93 @@ modules:
       - -Dplatforms=[]
     buildsystem: meson
 
-  - name: wine
-    sources:
-      - type: git
-        url: https://gitlab.winehq.org/wine/wine.git
-        tag: wine-11.15
-        commit: 2df1ee28039cf84776eb1421ed90bd154cebb65f
-        x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
-          type: git
-          tag-pattern: ^wine-(\d+\.\d+)$ # Regex pattern that matches latest git tag and compares it to source
-          is-main-source: true
-    build-options:
-      # no-debuginfo: true # Keep debug symbols in main org.wine.Sdk, instead of the Flatpak default of putting them in org.wine.Sdk.Debug extension
-      arch:
-        aarch64:
-          append-path: /usr/lib/llvm-mingw/bin # Add llvm-mingw compiler to the path
-          config-opts:
-            - --prefix=${FLATPAK_DEST}
-            - --enable-archs=aarch64,arm,arm64ec,i386 # Build for aarch64 - 64bit ARM dll/exe, arm - 32bit ARM dll/exe, arm64ec - Native 64bit x86 Windows dll/exe rebuilt for running on ARM, i386 - 32bit x86 dll/exe
-            - --with-mingw=clang                      # Use LLVM/Clang compilers (Some --enable-archs require this)
-            - --disable-winemenubuilder
-            - --disable-tests
-            - --disable-opencl
-          libdir: /usr/lib
-      env:
-        LIBDIR: lib
-        CFLAGS: -fno-stack-protector # Override org.freedesktop.Sdk default -fstack-protector-strong (Can cause segmentation faults on ARM without this)
-    make-install-args:
-      - LDCONFIG=/bin/true                # When make install calls ldconfig return true (Default can cause problems when building in a Flatpak)
-      - UPDATE_DESKTOP_DATABASE=/bin/true # When make install calls update-desktop-database return true (Default can cause problems when building in a Flatpak)
-      - INSTALL_PROGRAM_FLAGS=-s          # Strip debug symbols from binaries when installed (Smaller install size at the cost of harder debugging)
+  # - name: wine
+  #   sources:
+  #     - type: git
+  #       url: https://gitlab.winehq.org/wine/wine.git
+  #       tag: wine-11.15
+  #       commit: 2df1ee28039cf84776eb1421ed90bd154cebb65f
+  #       x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+  #         type: git
+  #         tag-pattern: ^wine-(\d+\.\d+)$ # Regex pattern that matches latest git tag and compares it to source
+  #         is-main-source: true
+  #   build-options:
+  #     # no-debuginfo: true # Keep debug symbols in main org.wine.Sdk, instead of the Flatpak default of putting them in org.wine.Sdk.Debug extension
+  #     arch:
+  #       aarch64:
+  #         append-path: /usr/lib/llvm-mingw/bin # Add llvm-mingw compiler to the path
+  #         config-opts:
+  #           - --prefix=${FLATPAK_DEST}
+  #           - --enable-archs=aarch64,arm,arm64ec,i386 # Build for aarch64 - 64bit ARM dll/exe, arm - 32bit ARM dll/exe, arm64ec - Native 64bit x86 Windows dll/exe rebuilt for running on ARM, i386 - 32bit x86 dll/exe
+  #           - --with-mingw=clang                      # Use LLVM/Clang compilers (Some --enable-archs require this)
+  #           - --disable-winemenubuilder
+  #           - --disable-tests
+  #           - --disable-opencl
+  #         libdir: /usr/lib
+  #     env:
+  #       LIBDIR: lib
+  #       CFLAGS: -fno-stack-protector # Override org.freedesktop.Sdk default -fstack-protector-strong (Can cause segmentation faults on ARM without this)
+  #   make-install-args:
+  #     - LDCONFIG=/bin/true                # When make install calls ldconfig return true (Default can cause problems when building in a Flatpak)
+  #     - UPDATE_DESKTOP_DATABASE=/bin/true # When make install calls update-desktop-database return true (Default can cause problems when building in a Flatpak)
+  #     - INSTALL_PROGRAM_FLAGS=-s          # Strip debug symbols from binaries when installed (Smaller install size at the cost of harder debugging)
 
-  # FEX x86 to ARM emulator backend for wine, allows running 32/64bit x86 exe/dll files on ARM. Replaces wine's xtajit.dll and xtajit64.dll
-  - name: fex-wine
-    buildsystem: simple
-    build-options:
-      append-path: /usr/lib/llvm-mingw/bin:/usr/lib/sdk/llvm21/bin:/usr/lib/sdk/mingw-w64/bin
-      prepend-ld-library-path: /usr/lib/sdk/llvm21/lib
-      env:
-        CC: clang
-        CXX: clang++
-    sources:
-      - type: git
-        url: https://github.com/FEX-Emu/FEX.git
-        tag: FEX-2608
-        submodules: true
-        x-checker-data:
-          type: git
-          tag-pattern: ^FEX-(\d+(\.\d+)?)$
-    build-commands:
-      - |
-        unset CFLAGS CXXFLAGS LDFLAGS ASFLAGS # Unset default Flatpak flags (They cause errors here)
+  # # FEX x86 to ARM emulator backend for wine, allows running 32/64bit x86 exe/dll files on ARM. Replaces wine's xtajit.dll and xtajit64.dll
+  # - name: fex-wine
+  #   buildsystem: simple
+  #   build-options:
+  #     append-path: /usr/lib/llvm-mingw/bin:/usr/lib/sdk/llvm21/bin:/usr/lib/sdk/mingw-w64/bin
+  #     prepend-ld-library-path: /usr/lib/sdk/llvm21/lib
+  #     env:
+  #       CC: clang
+  #       CXX: clang++
+  #   sources:
+  #     - type: git
+  #       url: https://github.com/FEX-Emu/FEX.git
+  #       tag: FEX-2608
+  #       submodules: true
+  #       x-checker-data:
+  #         type: git
+  #         tag-pattern: ^FEX-(\d+(\.\d+)?)$
+  #   build-commands:
+  #     - |
+  #       unset CFLAGS CXXFLAGS LDFLAGS ASFLAGS # Unset default Flatpak flags (They cause errors here)
 
-        # WoW64 32bit backend (Allows running 32bit x86 dll/exe)
-        mkdir build-wow64
-        cd build-wow64
-        cmake -GNinja \
-          -DCMAKE_TOOLCHAIN_FILE=../Data/CMake/toolchain_mingw.cmake \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DMINGW_TRIPLE=aarch64-w64-mingw32 \
-          -DENABLE_LTO=False \
-          -DBUILD_TESTS=False \
-          -DBUILD_TESTING=False \
-          -DENABLE_JEMALLOC_GLIBC_ALLOC=False \
-          -DTUNE_CPU=none \
-          ..
-        ninja wow64fex
-        ls -la Bin # Debugging
-        install -Dm755 Bin/libwow64fex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit.dll # Install/rename the wow64 fex-wine dll in place of the Windows expected xtajit dll
-        cd ..
+  #       # WoW64 32bit backend (Allows running 32bit x86 dll/exe)
+  #       mkdir build-wow64
+  #       cd build-wow64
+  #       cmake -GNinja \
+  #         -DCMAKE_TOOLCHAIN_FILE=../Data/CMake/toolchain_mingw.cmake \
+  #         -DCMAKE_BUILD_TYPE=Release \
+  #         -DMINGW_TRIPLE=aarch64-w64-mingw32 \
+  #         -DENABLE_LTO=False \
+  #         -DBUILD_TESTS=False \
+  #         -DBUILD_TESTING=False \
+  #         -DENABLE_JEMALLOC_GLIBC_ALLOC=False \
+  #         -DTUNE_CPU=none \
+  #         ..
+  #       ninja wow64fex
+  #       ls -la Bin # Debugging
+  #       install -Dm755 Bin/libwow64fex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit.dll # Install/rename the wow64 fex-wine dll in place of the Windows expected xtajit dll
+  #       cd ..
  
-        # ARM64EC 64bit backend (Allows running 64bit x86 dll/exe)
-        mkdir build-arm64ec
-        cd build-arm64ec
-        cmake -GNinja \
-          -DCMAKE_TOOLCHAIN_FILE=../Data/CMake/toolchain_mingw.cmake \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DMINGW_TRIPLE=arm64ec-w64-mingw32 \
-          -DENABLE_LTO=False \
-          -DBUILD_TESTS=False \
-          -DBUILD_TESTING=False \
-          -DENABLE_JEMALLOC_GLIBC_ALLOC=False \
-          -DTUNE_CPU=none \
-          ..
-        ninja arm64ecfex
-        ls -la Bin # Debugging
-        install -Dm755 Bin/libarm64ecfex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit64.dll # Install/rename the arm64ec fex-wine dll in place of the Windows expected xtajit64 dll
-        cd ..
+  #       # ARM64EC 64bit backend (Allows running 64bit x86 dll/exe)
+  #       mkdir build-arm64ec
+  #       cd build-arm64ec
+  #       cmake -GNinja \
+  #         -DCMAKE_TOOLCHAIN_FILE=../Data/CMake/toolchain_mingw.cmake \
+  #         -DCMAKE_BUILD_TYPE=Release \
+  #         -DMINGW_TRIPLE=arm64ec-w64-mingw32 \
+  #         -DENABLE_LTO=False \
+  #         -DBUILD_TESTS=False \
+  #         -DBUILD_TESTING=False \
+  #         -DENABLE_JEMALLOC_GLIBC_ALLOC=False \
+  #         -DTUNE_CPU=none \
+  #         ..
+  #       ninja arm64ecfex
+  #       ls -la Bin # Debugging
+  #       install -Dm755 Bin/libarm64ecfex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit64.dll # Install/rename the arm64ec fex-wine dll in place of the Windows expected xtajit64 dll
+  #       cd ..
 cleanup:
   - '*.a'           # Static libraries
   - '*.la'          # Libtool archives
