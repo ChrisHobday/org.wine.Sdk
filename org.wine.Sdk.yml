@@ -148,7 +148,8 @@ modules:
           type: html
           url: https://deb.debian.org/debian/pool/main/libc/libcapi20-3/ # Use this file to...
           pattern: (libcapi20-3_(\d[\d\.]+\d).orig.tar.bz2)              # Search for this regex pattern and compare it to source to see if there is a newer version
-    autoreconf: true # Use autotools to regenerate build scripts
+    config-args:
+      - --build=aarch64-unknown-linux-gnu
 
   # For Kerberos authentication protocol (Optional Wine dependency)
   - name: krb5
@@ -232,13 +233,6 @@ modules:
 
   # FEX x86 to ARM emulator backend for wine, allows running 32/64bit x86 exe/dll files on ARM. Replaces wine's xtajit.dll and xtajit64.dll
   - name: fex-wine
-    buildsystem: simple
-    build-options:
-      append-path: /usr/lib/llvm-mingw/bin:/usr/lib/sdk/llvm21/bin:/usr/lib/sdk/mingw-w64/bin
-      prepend-ld-library-path: /usr/lib/sdk/llvm21/lib
-      env:
-        CC: clang
-        CXX: clang++
     sources:
       - type: git
         url: https://github.com/FEX-Emu/FEX.git
@@ -247,6 +241,13 @@ modules:
         x-checker-data:
           type: git
           tag-pattern: ^FEX-(\d+(\.\d+)?)$
+    build-options:
+      append-path: /usr/lib/llvm-mingw/bin:/usr/lib/sdk/llvm21/bin:/usr/lib/sdk/mingw-w64/bin
+      prepend-ld-library-path: /usr/lib/sdk/llvm21/lib
+      env:
+        CC: clang
+        CXX: clang++
+    buildsystem: simple
     build-commands:
       - |
         unset CFLAGS CXXFLAGS LDFLAGS ASFLAGS # Unset default Flatpak flags (They cause errors here)
