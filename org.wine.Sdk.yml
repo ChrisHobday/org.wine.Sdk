@@ -123,10 +123,9 @@ modules:
           -DBUILD_TESTING=False \
           -DBUILD_FEXCONFIG=False \
           ..
-        ninja FEXServer FEXHeaderCheck
+        ninja FEXServer
         ls -la  # Debugging
         install -Dm755 Bin/FEXServer ${FLATPAK_DEST}/bin/FEXServer
-        install -Dm755 Bin/FEXHeaderCheck ${FLATPAK_DEST}/bin/FEXHeaderCheck
         cd ..
 
         # WoW64 32bit backend (Allows running 32bit x86 dll/exe)
