@@ -51,6 +51,21 @@ modules:
       - mkdir -p ${FLATPAK_DEST}/lib/llvm-mingw
       - cp -a . ${FLATPAK_DEST}/lib/llvm-mingw/
 
+  # For OpenGL rendering in bitmaps (Optional Wine dependency) (An old version of mesa, good enough for building the libosmesa part we need)
+  - name: libosmesa
+    sources: &libosmesa-sources
+      - type: git
+        url: https://gitlab.freedesktop.org/mesa/mesa.git
+        tag: mesa-20.2.6
+        commit: 7b866d516a7dc0a36dc8ea7ce7733414294e26d9
+    config-opts: &libosmesa-config-opts
+      - -Dosmesa=classic     # Only works because we are using old mesa 20.2.6 (If updated will need to be osmesa=true)
+      - -Ddri-drivers=[]
+      - -Dgallium-drivers=[]
+      - -Dvulkan-drivers=[]
+      - -Dplatforms=[]
+    buildsystem: meson
+
   - name: wine
     sources:
       - type: git
