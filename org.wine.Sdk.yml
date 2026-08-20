@@ -129,13 +129,14 @@ modules:
   # For handling digital cameras (Optional Wine dependency)
   - name: libgphoto2
     sources:
-      - type: git
-        url: https://github.com/gphoto/libgphoto2.git
-        tag: v2.5.34
-        commit: a4ec9cc8b799d3e620c89feeaeb3ec86f362a12f
+      - type: archive
+        url: https://github.com/gphoto/libgphoto2/releases/download/v2.5.34/libgphoto2-2.5.34.tar.xz
+        sha256: 51993f5d9bfb6b4e5925cbbe5883085791bff6f81bcacb8ffe1b783ce76d586a
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
-          type: git
-          tag-pattern: ^v(\d[\d\.]+\d)$ # Regex pattern that matches latest git tag and compares it to source
+          type: html
+          url: https://raw.githubusercontent.com/gphoto/libgphoto2/refs/heads/master/NEWS                           # Use this file to...
+          version-pattern: libgphoto2\s(\d[\d\.]+\d)\srelease                                                       # Search for this regex pattern
+          url-template: https://github.com/gphoto/libgphoto2/releases/download/v$version/libgphoto2-$version.tar.xz # Compare this file (found using regex match from above) to the source to see if there is a newer version
 
   # For handling ISDN devices (Optional Wine dependency)
   - name: libcapi20
