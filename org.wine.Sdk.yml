@@ -30,6 +30,7 @@ modules:
         done
         popd                                                     # Change back to starting directory (location where last pushd was used above)
 
+  # LLVM Clang compiler, needed for compiling some wine --enable-archs backends on ARM and fex-wine
   - name: llvm-mingw
     only-arches:
       - aarch64
@@ -81,6 +82,7 @@ modules:
       - UPDATE_DESKTOP_DATABASE=/bin/true # When make install calls update-desktop-database return true (Default can cause problems when building in a Flatpak)
       - INSTALL_PROGRAM_FLAGS=-s          # Strip debug symbols from binaries when installed (Smaller install size at the cost of harder debugging)
 
+  # FEX x86 to ARM emulator backend for wine, allows running 32/64bit x86 exe/dll files on ARM. Replaces wine's xtajit.dll and xtajit64.dll
   - name: fex-wine
     buildsystem: simple
     build-options:
@@ -100,25 +102,6 @@ modules:
     build-commands:
       - |
         unset CFLAGS CXXFLAGS LDFLAGS ASFLAGS # Unset default Flatpak flags (They cause errors here)
-
-        # FEXServer (WoW64 32bit backend needs this for running 32bit x86 dll/exe)
-        # mkdir build-host
-        # cd build-host
-        # cmake -GNinja \
-        #   -DCMAKE_SYSTEM_NAME=Linux \
-        #   -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
-        #   -DCMAKE_C_COMPILER_TARGET=aarch64-linux-gnu \
-        #   -DCMAKE_CXX_COMPILER_TARGET=aarch64-linux-gnu \
-        #   -DCMAKE_BUILD_TYPE=Release \
-        #   -DENABLE_LTO=False \
-        #   -DBUILD_TESTS=False \
-        #   -DBUILD_TESTING=False \
-        #   -DBUILD_FEXCONFIG=False \
-        #   ..
-        # ninja FEXServer
-        # ls -la Bin # Debugging
-        # install -Dm755 Bin/FEXServer ${FLATPAK_DEST}/bin/FEXServer
-        # cd ..
 
         # WoW64 32bit backend (Allows running 32bit x86 dll/exe)
         mkdir build-wow64
@@ -158,8 +141,11 @@ modules:
 cleanup:
   - '*.a'           # Static libraries
   - '*.la'          # Libtool archives
+  - /share/drirc.d  # XML configuration files for Mesa
+  - /share/docs     # Documentation files
   - /share/et       # Error table files
   - /share/examples # Example programs or configurations
   - /share/man      # Man pages
   - /include        # Header files
   - /lib/pkgconfig  # Package config files
+  - /lib/debug      # Debug files
