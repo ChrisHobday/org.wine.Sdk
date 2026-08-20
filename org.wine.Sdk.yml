@@ -110,23 +110,23 @@ modules:
         unset CFLAGS CXXFLAGS LDFLAGS ASFLAGS # Unset default Flatpak flags (They cause errors here)
 
         # FEXServer (WoW64 32bit backend needs this for running 32bit x86 dll/exe)
-        mkdir build-host
-        cd build-host
-        cmake -GNinja \
-          -DCMAKE_SYSTEM_NAME=Linux \
-          -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
-          -DCMAKE_C_COMPILER_TARGET=aarch64-linux-gnu \
-          -DCMAKE_CXX_COMPILER_TARGET=aarch64-linux-gnu \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DENABLE_LTO=False \
-          -DBUILD_TESTS=False \
-          -DBUILD_TESTING=False \
-          -DBUILD_FEXCONFIG=False \
-          ..
-        ninja FEXServer
-        ls -la Bin # Debugging
-        install -Dm755 Bin/FEXServer ${FLATPAK_DEST}/bin/FEXServer
-        cd ..
+        # mkdir build-host
+        # cd build-host
+        # cmake -GNinja \
+        #   -DCMAKE_SYSTEM_NAME=Linux \
+        #   -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
+        #   -DCMAKE_C_COMPILER_TARGET=aarch64-linux-gnu \
+        #   -DCMAKE_CXX_COMPILER_TARGET=aarch64-linux-gnu \
+        #   -DCMAKE_BUILD_TYPE=Release \
+        #   -DENABLE_LTO=False \
+        #   -DBUILD_TESTS=False \
+        #   -DBUILD_TESTING=False \
+        #   -DBUILD_FEXCONFIG=False \
+        #   ..
+        # ninja FEXServer
+        # ls -la Bin # Debugging
+        # install -Dm755 Bin/FEXServer ${FLATPAK_DEST}/bin/FEXServer
+        # cd ..
 
         # WoW64 32bit backend (Allows running 32bit x86 dll/exe)
         mkdir build-wow64
@@ -144,7 +144,6 @@ modules:
         ninja wow64fex
         ls -la Bin # Debugging
         install -Dm755 Bin/libwow64fex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit.dll # Install/rename the wow64 fex-wine dll in place of the Windows expected xtajit dll
-        cp -a Bin/*.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/
         cd ..
  
         # ARM64EC 64bit backend (Allows running 64bit x86 dll/exe)
@@ -163,5 +162,4 @@ modules:
         ninja arm64ecfex
         ls -la Bin # Debugging
         install -Dm755 Bin/libarm64ecfex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit64.dll # Install/rename the arm64ec fex-wine dll in place of the Windows expected xtajit64 dll
-        cp -a Bin/*.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/
         cd ..
