@@ -113,9 +113,9 @@ modules:
         mkdir build-host
         cd build-host
         cmake -GNinja \
-          -DCMAKE_C_COMPILER=/usr/bin/clang \
-          -DCMAKE_CXX_COMPILER=/usr/bin/clang++ \
           -DCMAKE_SYSTEM_NAME=Linux \
+          -DCMAKE_C_COMPILER_TARGET=aarch64-linux-gnu \
+          -DCMAKE_CXX_COMPILER_TARGET=aarch64-linux-gnu \
           -DCMAKE_BUILD_TYPE=Release \
           -DENABLE_LTO=False \
           -DBUILD_TESTS=False \
