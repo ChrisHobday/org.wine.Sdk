@@ -109,7 +109,7 @@ modules:
       - |
         unset CFLAGS CXXFLAGS LDFLAGS ASFLAGS # Unset default Flatpak flags (They cause errors here)
 
-        # FEXServer and FEXInterpreter (WoW64 32bit backend needs these for running 32bit x86 dll/exe)
+        # FEXServer (WoW64 32bit backend needs this for running 32bit x86 dll/exe)
         mkdir build-host
         cd build-host
         cmake -GNinja \
@@ -124,7 +124,7 @@ modules:
           -DBUILD_FEXCONFIG=False \
           ..
         ninja FEXServer
-        ls -la  # Debugging
+        ls -la Bin # Debugging
         install -Dm755 Bin/FEXServer ${FLATPAK_DEST}/bin/FEXServer
         cd ..
 
@@ -142,6 +142,7 @@ modules:
           -DTUNE_CPU=none \
           ..
         ninja wow64fex
+        ls -la Bin # Debugging
         install -Dm755 Bin/libwow64fex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit.dll # Install/rename the wow64 fex-wine dll in place of the Windows expected xtajit dll
         cp -a Bin/*.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/
         cd ..
@@ -160,6 +161,7 @@ modules:
           -DTUNE_CPU=none \
           ..
         ninja arm64ecfex
+        ls -la Bin # Debugging
         install -Dm755 Bin/libarm64ecfex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit64.dll # Install/rename the arm64ec fex-wine dll in place of the Windows expected xtajit64 dll
         cp -a Bin/*.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/
         cd ..
