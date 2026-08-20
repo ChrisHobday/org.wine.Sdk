@@ -114,6 +114,7 @@ modules:
         cd build-host
         cmake -GNinja \
           -DCMAKE_SYSTEM_NAME=Linux \
+          -DCMAKE_SYSTEM_PROCESSOR=aarch64 \
           -DCMAKE_C_COMPILER_TARGET=aarch64-linux-gnu \
           -DCMAKE_CXX_COMPILER_TARGET=aarch64-linux-gnu \
           -DCMAKE_BUILD_TYPE=Release \
