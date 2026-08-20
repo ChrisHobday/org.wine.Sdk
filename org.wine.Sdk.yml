@@ -147,7 +147,8 @@ modules:
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: html
           url: https://deb.debian.org/debian/pool/main/libc/libcapi20-3/ # Use this file to...
-          pattern: (libcapi20-3_(\d[\d\.]+\d).orig.tar.bz2)             # Search for this regex pattern and compare it to source to see if there is a newer version
+          pattern: (libcapi20-3_(\d[\d\.]+\d).orig.tar.bz2)              # Search for this regex pattern and compare it to source to see if there is a newer version
+    autoreconf: true # Use autotools to regenerate build scripts
 
   # For Kerberos authentication protocol (Optional Wine dependency)
   - name: krb5
