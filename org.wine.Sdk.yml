@@ -80,14 +80,6 @@ modules:
       - LDCONFIG=/bin/true                # When make install calls ldconfig return true (Default can cause problems when building in a Flatpak)
       - UPDATE_DESKTOP_DATABASE=/bin/true # When make install calls update-desktop-database return true (Default can cause problems when building in a Flatpak)
       - INSTALL_PROGRAM_FLAGS=-s          # Strip debug symbols from binaries when installed (Smaller install size at the cost of harder debugging)
-    cleanup:
-      - '*.a'
-      - '*.la'
-      - /share/et
-      - /share/examples
-      - /share/man
-      - /include
-      - /lib/pkgconfig
 
   - name: fex-wine
     buildsystem: simple
@@ -163,3 +155,11 @@ modules:
         ls -la Bin # Debugging
         install -Dm755 Bin/libarm64ecfex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit64.dll # Install/rename the arm64ec fex-wine dll in place of the Windows expected xtajit64 dll
         cd ..
+cleanup:
+  - '*.a'           # Static libraries
+  - '*.la'          # Libtool archives
+  - /share/et       # Error table files
+  - /share/examples # Example programs or configurations
+  - /share/man      # Man pages
+  - /include        # Header files
+  - /lib/pkgconfig  # Package config files
