@@ -53,7 +53,7 @@ modules:
 
   # For OpenGL rendering in bitmaps (Optional Wine dependency) (An old version of mesa, good enough for building the libosmesa part we need)
   - name: libosmesa
-    sources: &libosmesa-sources
+    sources:
       - type: git
         url: https://gitlab.freedesktop.org/mesa/mesa.git
         tag: mesa-20.2.6
@@ -92,7 +92,7 @@ modules:
   # Middleware for access smart cards (Optional Wine dependency)
   - name: libpcsclite
     sources:
-      - type: archive
+      - type: git
         url: https://github.com/LudovicRousseau/PCSC.git
         tag: 2.5.1
         commit: 09138d7f7d02c714b004d9850f28727fbcc48a97
@@ -129,7 +129,7 @@ modules:
   # For handling digital cameras (Optional Wine dependency)
   - name: libgphoto2
     sources:
-      - type: archive
+      - type: git
         url: https://github.com/gphoto/libgphoto2.git
         tag: v2.5.34
         commit: a4ec9cc8b799d3e620c89feeaeb3ec86f362a12f
