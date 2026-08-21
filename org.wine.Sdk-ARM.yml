@@ -237,6 +237,21 @@ modules:
           type: git
           tag-pattern: ^wine-(\d+\.\d+)$ # Regex pattern that matches latest git tag and compares it to source
           is-main-source: true
+
+      # Wine Staging, bleeding edge wine patches
+      - type: git
+        url: https://gitlab.winehq.org/wine/wine-staging.git
+        tag: v11.15
+        commit: 634865f9e409c7101adc6809f23af34d2a668525
+        dest: wine-staging
+        x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+          type: git
+          tag-pattern: ^v(\d+\.\d+)$ # Regex pattern that matches latest git tag and compares it to source
+
+      # Script that runs before build and applies the above wine-staging patches
+      - type: shell
+        commands:
+          - ./wine-staging/patches/patchinstall.sh DESTDIR="./" --all
     build-options:
       # no-debuginfo: true # Keep debug symbols in main org.wine.Sdk, instead of the Flatpak default of putting them in org.wine.Sdk.Debug extension
       arch:
