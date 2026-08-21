@@ -203,8 +203,10 @@ modules:
           pattern: (Parse-Yapp-(\d[\d\.]+\d).tar.gz)                # Search for this regex pattern and compare it to source to see if there is a newer version
     buildsystem: simple
     build-commands:
-      - perl Makefile.PL
-      - make install
+      - |
+        perl Makefile.PL
+        make
+        make install
 
   # For SMB networking protocol (Optional libnetapi Wine dependency)
   - name: samba
@@ -226,6 +228,17 @@ modules:
       - --without-ad-dc
       - --without-ads
       - --without-pam
+
+  # For Open Database Connectivity, talking to SQL type databases (Optional Wine dependency)
+  - name: unixodbc
+    sources:
+      - type: git
+        url: https://github.com/lurcher/unixODBC.git
+        tag: v2.3.14
+        commit: 9a814155d60c44632b23d7b1bb47b17206e21db0
+        x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+          type: git
+          tag-pattern: ^v(\d[\d\.]+\d)$ # Regex pattern that matches latest git tag and compares it to source
 
   - name: wine
     sources:
