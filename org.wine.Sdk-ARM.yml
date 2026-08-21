@@ -391,6 +391,21 @@ modules:
       - |
         mkdir -p ${FLATPAK_DEST}/share/wine/mono/          # Make directory path for Wine Mono
         cp -a wine-mono-* ${FLATPAK_DEST}/share/wine/mono/ # Copy Wine Mono directory keeping file permissions the same
+
+  # For helping to download and install various libraries, fonts, etc into a Wine prefix
+  - name: winetricks
+    sources:
+      - type: git
+        url: https://github.com/Winetricks/winetricks.git
+        tag: '20260125'
+        commit: b76e1ee79ac57d7aceb384f74518fc423265810c
+        x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+          type: git
+          tag-pattern: ^(\d+)$ # Regex pattern that matches latest git tag and compares it to source
+    buildsystem: simple
+    build-commands:
+      - |
+        make install
 # Cleanup left over build files and other uneeded files
 cleanup:
   - '*.a'           # Static libraries
