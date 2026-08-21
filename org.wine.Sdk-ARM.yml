@@ -264,8 +264,7 @@ modules:
       # Script that runs before build and applies the above wine-staging patches
       - type: shell
         commands:
-          - ls -la ./wine-staging
-          - ./wine-staging/patches/patchinstall.py DESTDIR="./" --all
+          - ./wine-staging/staging/patchinstall.py DESTDIR="./" --all
     build-options:
       # no-debuginfo: true # Keep debug symbols in main org.wine.Sdk, instead of the Flatpak default of putting them in org.wine.Sdk.Debug extension
       arch:
