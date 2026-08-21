@@ -51,7 +51,7 @@ jobs:
 
       - name: Build
         run: |
-          flatpak-builder --force-clean --repo=repo build-dir org.wine.Sdk.yml
+          flatpak-builder --force-clean --repo=repo build-dir org.wine.Sdk-ARM.yml
 
       - name: Upload build output
         if: always()  # grab logs/output even on failure, for debugging
