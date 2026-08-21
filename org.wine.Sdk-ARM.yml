@@ -7,6 +7,25 @@ runtime: org.freedesktop.Platform
 runtime-version: &runtime-version '25.08'
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.mingw-w64 # Needed for cross-compiling 32/64bit Wine (Compiling Wine Windows dlls, fex-wine and rpc-bridge)
+# platform-extensions:
+#   - org.freedesktop.Platform.Locale
+# Re-export org.freedesktop.Platform extensions for child Apps to inherit
+inherit-extensions:
+  - org.freedesktop.Platform.GL           # OpenGL
+  - org.freedesktop.Platform.VulkanLayer  # Vulkan layers like MangoHud, Gamescope, etc
+  - org.freedesktop.Platform.Timezones    # Timezone data
+  - org.freedesktop.Platform.GStreamer    # GStreamer codec plugins
+  - org.freedesktop.Platform.codecs-extra # Video codecs like H.264, H.265, etc
+  - org.freedesktop.Platform.Icontheme    # Icon theme assets like Breeze, Adwaita, etc
+# inherit-sdk-extensions:
+#   - org.freedesktop.Sdk.Extension
+# Re-export org.freedesktop.Platform extensions for child Apps to inherit
+add-extensions:
+  org.freedesktop.Platform.codecs-extra: # Codecs (replaces ffmpeg-full & openh264)
+    directory: lib/codecs
+    add-ld-path: lib
+    version: 25.08-extra
+    autodelete: false
 modules:
   # Setting up required stuff
   - name: Setup
