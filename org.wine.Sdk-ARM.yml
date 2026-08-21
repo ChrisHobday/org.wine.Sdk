@@ -28,7 +28,7 @@ add-extensions:
     autodelete: false
 modules:
   # Setting up required stuff
-  - name: Setup
+  - name: setup
     buildsystem: simple
     build-commands:
       - |
@@ -342,6 +342,56 @@ modules:
         ls -la Bin # Debugging
         install -Dm755 Bin/libarm64ecfex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit64.dll # Install/rename the arm64ec fex-wine dll in place of the Windows expected xtajit64 dll
         cd ..
+
+  # Wine addon that allows opening website content
+  - name: wine-gecko
+    sources:
+      - type: archive
+        url: https://dl.winehq.org/wine/wine-gecko/2.47.4/wine-gecko-2.47.4-x86.tar.xz
+        sha256: 2cfc8d5c948602e21eff8a78613e1826f2d033df9672cace87fed56e8310afb6
+        strip-components: 0
+        # TODO: Keep tabs that the URL below is good for getting the correct latest version (URL below uses the master version of Wine not the specific version used above and could possibly update Wine Gecko to a newer version before the used Wine version is ready)
+        x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+          type: html
+          url: https://gitlab.winehq.org/wine/wine/-/raw/master/dlls/appwiz.cpl/addons.c              # Use this file to...
+          version-pattern: GECKO_VERSION\s+"(\d[\d\.]+\d)"                                            # Search for this regex pattern
+          url-template: https://dl.winehq.org/wine/wine-gecko/$version/wine-gecko-$version-x86.tar.xz # Compare this file (found using regex match from above) to the source to see if there is a newer version
+
+      - type: archive
+        url: https://dl.winehq.org/wine/wine-gecko/2.47.4/wine-gecko-2.47.4-x86_64.tar.xz
+        sha256: fd88fc7e537d058d7a8abf0c1ebc90c574892a466de86706a26d254710a82814
+        strip-components: 0
+        # TODO: Keep tabs that the URL below is good for getting the correct latest version (URL below uses the master version of Wine not the specific version used above and could possibly update Wine Gecko to a newer version before the used Wine version is ready)
+        x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+          type: html
+          url: https://gitlab.winehq.org/wine/wine/-/raw/master/dlls/appwiz.cpl/addons.c                 # Use this file to...
+          version-pattern: GECKO_VERSION\s+"(\d[\d\.]+\d)"                                               # Search for this regex pattern
+          url-template: https://dl.winehq.org/wine/wine-gecko/$version/wine-gecko-$version-x86_64.tar.xz # Compare this file (found using regex match from above) to the source to see if there is a newer version
+    buildsystem: simple
+    build-commands:
+      - |
+        mkdir -p ${FLATPAK_DEST}/share/wine/gecko/           # Make directory path for Wine Gecko
+        cp -a wine-gecko-* ${FLATPAK_DEST}/share/wine/gecko/ # Copy Wine Gecko directories keeping file permissions the same
+
+  # Wine addon that replaces the default .NET framework
+  - name: wine-mono
+    sources:
+      - type: archive
+        url: https://dl.winehq.org/wine/wine-mono/11.2.0/wine-mono-11.2.0-x86.tar.xz
+        sha256: c9fb2e2823acf30b000b8806177db0f40751786136dd3f8fb2be7897b1643d06
+        strip-components: 0
+        # TODO: Keep tabs that the URL below is good for getting the correct latest version (URL below uses the master version of Wine not the specific version used above and could possibly update Wine Mono to a newer version before the used Wine version is ready)
+        x-checker-data:                                                                             # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
+          type: html
+          url: https://gitlab.winehq.org/wine/wine/-/raw/master/dlls/appwiz.cpl/addons.c            # Use this file to...
+          version-pattern: MONO_VERSION\s+"(\d[\d\.]+\d)"                                           # Search for this regex pattern
+          url-template: https://dl.winehq.org/wine/wine-mono/$version/wine-mono-$version-x86.tar.xz # Compare this file (found using regex match from above) to the source to see if there is a newer version
+    buildsystem: simple
+    build-commands:
+      - |
+        mkdir -p ${FLATPAK_DEST}/share/wine/mono/          # Make directory path for Wine Mono
+        cp -a wine-mono-* ${FLATPAK_DEST}/share/wine/mono/ # Copy Wine Mono directory keeping file permissions the same
+# Cleanup left over build files and other uneeded files
 cleanup:
   - '*.a'           # Static libraries
   - '*.la'          # Libtool archives
