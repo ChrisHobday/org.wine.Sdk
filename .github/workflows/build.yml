@@ -45,7 +45,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .flatpak-builder
-          key: flatpak-builder-${{ hashFiles('org.wine.Sdk-ARM.yml') }}
+          key: flatpak-builder-${{ hashFiles('org.wine.Sdk.yml') }}
           restore-keys: |
             flatpak-builder-
 
