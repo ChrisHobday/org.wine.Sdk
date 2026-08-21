@@ -30,22 +30,6 @@ modules:
         done
         popd                                        # Change back to starting directory (location where last pushd was used above)
 
-  # Setting up required 32bit stuff
-  - name: Setup-i386
-    only-arches:
-    - x86_64
-    - i386
-    buildsystem: simple
-    build-commands:
-      - |
-        # Make directories needed by extensions
-        mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu              # 32bit Linux compatibility
-        touch ${FLATPAK_DEST}/lib/i386-linux-gnu/.keep           # File to make sure this directory is not pruned
-        mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu    # 32bit Linux compatibility debug
-        mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu/GL # 32bit OpenGL Debug
-        mkdir -p ${FLATPAK_DEST}/lib32/codecs                    # 32bit Codecs
-        mkdir -p ${FLATPAK_DEST}/lib32/ffmpeg                    # 32bit FFmpeg (Not sure if still needed codecs-extra replaced ffmpeg in 25.08)
-
   # LLVM Clang compiler, needed for compiling some wine --enable-archs backends on ARM and fex-wine
   - name: llvm-mingw
     only-arches:
