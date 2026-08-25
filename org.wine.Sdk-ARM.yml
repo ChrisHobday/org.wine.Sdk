@@ -273,7 +273,7 @@ modules:
           append-path: /usr/lib/llvm-mingw/bin # Add llvm-mingw compiler to the path
           config-opts:
             - --prefix=${FLATPAK_DEST}
-            - --enable-archs=aarch64,arm,arm64ec,i386 # Build for aarch64 - 64bit ARM dll/exe, arm - 32bit ARM dll/exe, arm64ec - Native 64bit x86 Windows dll/exe rebuilt for running on ARM, i386 - 32bit x86 dll/exe
+            - --enable-archs=aarch64,arm,arm64ec,i386 # Build for aarch64 - 64bit ARM dll/exe, arm - 32bit ARM dll/exe, arm64ec - Native 64bit x86 Windows dll/exe rebuilt for running on ARM, i386 - 32bit x86 dll/exe (Builds in WoW64 mode because 32bit is included)
             - --with-mingw=clang                      # Use LLVM/Clang compilers (Some --enable-archs require this)
             - --disable-winemenubuilder
             - --disable-tests
@@ -705,15 +705,15 @@ modules:
   - name: metainfo
     sources:
       - type: file
-        path: org.winestaging.Sdk.metainfo.xml
+        path: org.wine.Sdk.metainfo.xml
 
       - type: file
-        path: org.winestaging.Platform.metainfo.xml
+        path: org.wine.Platform.metainfo.xml
     buildsystem: simple
     build-commands:
       - |
-        install -Dm644 org.winestaging.Sdk.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo/      # Install SDK metainfo
-        install -Dm644 org.winestaging.Platform.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo/ # Install Platform metainfo
+        install -Dm644 org.wine.Sdk.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo/      # Install SDK metainfo
+        install -Dm644 org.wine.Platform.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo/ # Install Platform metainfo
 # Cleanup left over build files and other uneeded files
 cleanup:
   - '*.a'           # Static libraries
