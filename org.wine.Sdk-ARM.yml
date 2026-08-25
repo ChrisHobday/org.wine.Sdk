@@ -1,7 +1,7 @@
 id: org.wine.Sdk
 id-platform: org.wine.Platform
-branch: &app-version '11.15'
 build-runtime: true
+branch: &app-version '11.15'
 sdk: org.freedesktop.Sdk
 runtime: org.freedesktop.Platform
 runtime-version: &runtime-version '25.08'
@@ -277,7 +277,6 @@ modules:
             - --with-mingw=clang                      # Use LLVM/Clang compilers (Some --enable-archs require this)
             - --disable-winemenubuilder
             - --disable-tests
-            - --disable-opencl
           libdir: /usr/lib
       env:
         LIBDIR: lib
