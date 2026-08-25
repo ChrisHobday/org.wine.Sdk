@@ -701,6 +701,20 @@ modules:
       - |
         mv upscayl/bin/* ${FLATPAK_DEST}/bin
         mv upscayl/models ${FLATPAK_DEST}/bin
+
+  # Metainfo files
+  - name: metainfo
+    sources:
+      - type: file
+        path: org.winestaging.Sdk.metainfo.xml
+
+      - type: file
+        path: org.winestaging.Platform.metainfo.xml
+    buildsystem: simple
+    build-commands:
+      - |
+        install -Dm644 org.winestaging.Sdk.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo/      # Install SDK metainfo
+        install -Dm644 org.winestaging.Platform.metainfo.xml -t ${FLATPAK_DEST}/share/metainfo/ # Install Platform metainfo
 # Cleanup left over build files and other uneeded files
 cleanup:
   - '*.a'           # Static libraries
