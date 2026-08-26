@@ -1,22 +1,20 @@
-# This is a basic workflow to help you get started with Actions
-
 name: CI
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
+  # Runs workflow on push request for the main branch
   push:
     branches: [ "main" ]
+
+  # Runs workflow on pull request for the main branch
   pull_request:
     branches: [ "main" ]
 
-  # Allows you to run this workflow manually from the Actions tab
+  # Allows running workflow manually from the Actions tab
   workflow_dispatch:
-
 jobs:
+  # Build steps for ARM
   build-arm:
     runs-on: ubuntu-24.04-arm
-    timeout-minutes: 340  # stay under the 360min default ceiling, but be explicit
+    timeout-minutes: 340  # Timeout after 340 minutes. Default limit is 360 minutes
 
     steps:
       - uses: actions/checkout@v4
@@ -33,7 +31,7 @@ jobs:
 
       - name: Install required SDK/runtime + extensions
         run: |
-          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo # Add Flathub repo
+          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
           sudo flatpak install -y --noninteractive flathub \
             org.freedesktop.Sdk//25.08 \
             org.freedesktop.Platform//25.08 \
@@ -54,7 +52,7 @@ jobs:
           flatpak-builder --force-clean --repo=repo build-dir org.wine.Sdk-ARM.yml
 
       - name: Upload build output
-        if: always()  # grab logs/output even on failure, for debugging
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: repo-arm
@@ -62,8 +60,9 @@ jobs:
             repo/
           retention-days: 3
   build-x86_64:
+    # Build steps for x86_64
     runs-on: ubuntu-24.04
-    timeout-minutes: 340  # stay under the 360min default ceiling, but be explicit
+    timeout-minutes: 340  # Timeout after 340 minutes. Default limit is 360 minutes
  
     steps:
       - uses: actions/checkout@v4
@@ -80,7 +79,7 @@ jobs:
  
       - name: Install required SDK/runtime + extensions
         run: |
-          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo # Add Flathub repo
+          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
           sudo flatpak install -y --noninteractive flathub \
             org.freedesktop.Sdk//25.08 \
             org.freedesktop.Platform//25.08 \
@@ -88,7 +87,6 @@ jobs:
             org.freedesktop.Sdk.Extension.vala//25.08 \
             org.freedesktop.Sdk.Compat.i386//25.08 \
             org.freedesktop.Sdk.Extension.toolchain-i386//25.08
-
  
       - name: Cache flatpak-builder state
         uses: actions/cache@v4
@@ -103,7 +101,7 @@ jobs:
           flatpak-builder --force-clean --repo=repo build-dir org.wine.Sdk-x86_64.yml
  
       - name: Upload build output
-        if: always()  # grab logs/output even on failure, for debugging
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: repo-x86_64
