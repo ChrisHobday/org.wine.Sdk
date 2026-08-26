@@ -69,22 +69,21 @@ modules:
     buildsystem: simple
     build-commands:
       - |
-        ls
-        # # Make directories needed by extensions
-        # mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu              # 32bit Linux compatibility
-        # touch ${FLATPAK_DEST}/lib/i386-linux-gnu/.keep           # File to make sure this directory is not pruned
-        # # mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu    # 32bit Linux compatibility debug
-        # # mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu/GL # 32bit OpenGL Debug
-        # mkdir -p ${FLATPAK_DEST}/lib/codecs                      # Codecs (replaces ffmpeg-full & openh264)
-        # mkdir -p ${FLATPAK_DEST}/lib32/codecs                    # 32bit Codecs
-        # mkdir -p ${FLATPAK_DEST}/lib/ffmpeg                      # FFmpeg (Not sure if still needed codecs-extra replaced ffmpeg in 25.08)
-        # mkdir -p ${FLATPAK_DEST}/lib32/ffmpeg                    # 32bit FFmpeg (Not sure if still needed codecs-extra replaced ffmpeg in 25.08)
+        # Make directories needed by extensions
+        mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu              # 32bit Linux compatibility
+        touch ${FLATPAK_DEST}/lib/i386-linux-gnu/.keep           # File to make sure this directory is not pruned
+        # mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu    # 32bit Linux compatibility debug
+        # mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu/GL # 32bit OpenGL Debug
+        mkdir -p ${FLATPAK_DEST}/lib/codecs                      # Codecs (replaces ffmpeg-full & openh264)
+        mkdir -p ${FLATPAK_DEST}/lib32/codecs                    # 32bit Codecs
+        mkdir -p ${FLATPAK_DEST}/lib/ffmpeg                      # FFmpeg (Not sure if still needed codecs-extra replaced ffmpeg in 25.08)
+        mkdir -p ${FLATPAK_DEST}/lib32/ffmpeg                    # 32bit FFmpeg (Not sure if still needed codecs-extra replaced ffmpeg in 25.08)
 
         # # Make docs directories needed by modules
-        # mkdir -p /usr/share/runtime/docs/man                     # /usr/share/man symlinks here but it is not created by default and can cause errors when building modules
-        # mkdir -p /usr/share/runtime/docs/info                    # /usr/share/info symlinks here but it is not created by default and can cause errors when building modules
-        # mkdir -p /usr/share/runtime/docs/doc                     # /usr/share/doc symlinks here but it is not created by default and can cause errors when building modules
-        # mkdir -p /usr/share/runtime/docs/ri                      # /usr/share/ri symlinks here but it is not created by default and can cause errors when building modules
+        # mkdir -p ${FLATPAK_DEST}/share/runtime/docs/man                     # /usr/share/man symlinks here but it is not created by default and can cause errors when building modules
+        # mkdir -p ${FLATPAK_DEST}/share/runtime/docs/info                    # /usr/share/info symlinks here but it is not created by default and can cause errors when building modules
+        # mkdir -p ${FLATPAK_DEST}/share/runtime/docs/doc                     # /usr/share/doc symlinks here but it is not created by default and can cause errors when building modules
+        # mkdir -p ${FLATPAK_DEST}/share/runtime/docs/ri                      # /usr/share/ri symlinks here but it is not created by default and can cause errors when building modules
 
         # # Make locale directories needed by modules
         # pushd /usr/share/locale                                  # Change to /usr/share/locale directory, and store current directory to be popd back to below
