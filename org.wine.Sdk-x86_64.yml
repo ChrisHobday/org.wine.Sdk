@@ -63,44 +63,34 @@ add-extensions:
     add-ld-path: lib
     version: 25.08-extra
     autodelete: false
-# # YAML Anchor for 32bit build options, to be referred to by 32bit modules below (Avoids needing to rewrite this out for each 32bit module)
-# x-compat-i386-build-options: &compat-i386-build-options
-#   prepend-path: /usr/lib/sdk/toolchain-i386/bin                                   # /usr/lib/sdk/toolchain-i386/bin contains gnu 32bit libs needed for compiling
-#   prepend-pkg-config-path: /usr/lib32/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig # Make sure 32-bit dependencies are first on pkg-config search path
-#   libdir: /usr/lib32                                                              # Install libraries in /usr/lib32
-#   ldflags: -L/usr/lib32                                                           # Add /usr/lib32 to linker search path for modules without pkg-config
-#   env:
-#     CC: ccache i686-unknown-linux-gnu-gcc  # Compile C with GCC using ccache
-#     CXX: ccache i686-unknown-linux-gnu-g++ # Compile C++ with G++ using ccache
-#     x86_64_CC: ccache i686-w64-mingw32-gcc # Cross-compile C with x86_64-w64-mingw32-gcc using ccache
-# modules:
-#   # Setting up required stuff
-#   - name: Setup
-#     buildsystem: simple
-#     build-commands:
-#       - |
-#         # Make directories needed by extensions
-#         mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu              # 32bit Linux compatibility
-#         touch ${FLATPAK_DEST}/lib/i386-linux-gnu/.keep           # File to make sure this directory is not pruned
-#         # mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu    # 32bit Linux compatibility debug
-#         # mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu/GL # 32bit OpenGL Debug
-#         mkdir -p ${FLATPAK_DEST}/lib/codecs                      # Codecs (replaces ffmpeg-full & openh264)
-#         mkdir -p ${FLATPAK_DEST}/lib32/codecs                    # 32bit Codecs
-#         mkdir -p ${FLATPAK_DEST}/lib/ffmpeg                      # FFmpeg (Not sure if still needed codecs-extra replaced ffmpeg in 25.08)
-#         mkdir -p ${FLATPAK_DEST}/lib32/ffmpeg                    # 32bit FFmpeg (Not sure if still needed codecs-extra replaced ffmpeg in 25.08)
+modules:
+  # Setting up required stuff
+  - name: Setup
+    buildsystem: simple
+    build-commands:
+      - |
+        # Make directories needed by extensions
+        mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu              # 32bit Linux compatibility
+        touch ${FLATPAK_DEST}/lib/i386-linux-gnu/.keep           # File to make sure this directory is not pruned
+        # mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu    # 32bit Linux compatibility debug
+        # mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu/GL # 32bit OpenGL Debug
+        mkdir -p ${FLATPAK_DEST}/lib/codecs                      # Codecs (replaces ffmpeg-full & openh264)
+        mkdir -p ${FLATPAK_DEST}/lib32/codecs                    # 32bit Codecs
+        mkdir -p ${FLATPAK_DEST}/lib/ffmpeg                      # FFmpeg (Not sure if still needed codecs-extra replaced ffmpeg in 25.08)
+        mkdir -p ${FLATPAK_DEST}/lib32/ffmpeg                    # 32bit FFmpeg (Not sure if still needed codecs-extra replaced ffmpeg in 25.08)
 
-#         # Make docs directories needed by modules
-#         mkdir -p /usr/share/runtime/docs/man                     # /usr/share/man symlinks here but it is not created by default and can cause errors when building modules
-#         mkdir -p /usr/share/runtime/docs/info                    # /usr/share/info symlinks here but it is not created by default and can cause errors when building modules
-#         mkdir -p /usr/share/runtime/docs/doc                     # /usr/share/doc symlinks here but it is not created by default and can cause errors when building modules
-#         mkdir -p /usr/share/runtime/docs/ri                      # /usr/share/ri symlinks here but it is not created by default and can cause errors when building modules
+        # Make docs directories needed by modules
+        mkdir -p /usr/share/runtime/docs/man                     # /usr/share/man symlinks here but it is not created by default and can cause errors when building modules
+        mkdir -p /usr/share/runtime/docs/info                    # /usr/share/info symlinks here but it is not created by default and can cause errors when building modules
+        mkdir -p /usr/share/runtime/docs/doc                     # /usr/share/doc symlinks here but it is not created by default and can cause errors when building modules
+        mkdir -p /usr/share/runtime/docs/ri                      # /usr/share/ri symlinks here but it is not created by default and can cause errors when building modules
 
-#         # Make locale directories needed by modules
-#         pushd /usr/share/locale                                  # Change to /usr/share/locale directory, and store current directory to be popd back to below
-#         for link in `find . -type l`; do                         # For each symlink in /usr/share/locale
-#           mkdir -p $(readlink  $link)                            # Make the directory the symlink is pointing to (If it doesn't already exist)
-#         done
-#         popd                                                     # Change back to starting directory (location where last pushd was used above)
+        # Make locale directories needed by modules
+        pushd /usr/share/locale                                  # Change to /usr/share/locale directory, and store current directory to be popd back to below
+        for link in `find . -type l`; do                         # For each symlink in /usr/share/locale
+          mkdir -p $(readlink  $link)                            # Make the directory the symlink is pointing to (If it doesn't already exist)
+        done
+        popd                                                     # Change back to starting directory (location where last pushd was used above)
 
 #   # For OpenGL rendering in bitmaps (Optional Wine dependency) (An old version of mesa, good enough for building the libosmesa part we need)
 #   - name: libosmesa
