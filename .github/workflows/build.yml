@@ -98,7 +98,7 @@ jobs:
  
       - name: Build
         run: |
-          flatpak-builder -v --force-clean --repo=repo build-dir org.wine.Sdk-x86_64.yml
+          flatpak-builder -v --force-clean --repo=repo --disable-rofiles-fuse build-dir org.wine.Sdk-x86_64.yml
  
       - name: Upload build output
         if: always()
