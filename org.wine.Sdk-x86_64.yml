@@ -5,14 +5,14 @@ branch: &app-version '11.15'
 sdk: org.freedesktop.Sdk
 runtime: org.freedesktop.Platform
 runtime-version: &runtime-version '25.08'
-# sdk-extensions:
-#   - org.freedesktop.Sdk.Compat.i386              # Needed for building 32bit Wine
-#   - org.freedesktop.Sdk.Extension.toolchain-i386 # Needed for building 32bit Wine
-#   - org.freedesktop.Sdk.Extension.mingw-w64      # Needed for cross-compiling 32/64bit Wine (Compiling Wine Windows dlls, fex-wine and rpc-bridge)
-#   - org.freedesktop.Sdk.Extension.vala           # Needed for building msitools
-# # platform-extensions:
-# #   - org.freedesktop.Platform.Locale
-# # Re-export org.freedesktop.Platform extensions for child Apps to inherit
+sdk-extensions:
+  - org.freedesktop.Sdk.Compat.i386              # Needed for building 32bit Wine
+  - org.freedesktop.Sdk.Extension.toolchain-i386 # Needed for building 32bit Wine
+  - org.freedesktop.Sdk.Extension.mingw-w64      # Needed for cross-compiling 32/64bit Wine (Compiling Wine Windows dlls, fex-wine and rpc-bridge)
+  - org.freedesktop.Sdk.Extension.vala           # Needed for building msitools
+# platform-extensions:
+#   - org.freedesktop.Platform.Locale
+# Re-export org.freedesktop.Platform extensions for child Apps to inherit
 # inherit-extensions:
 #   - org.freedesktop.Platform.GL           # OpenGL
 #   - org.freedesktop.Platform.VAAPI.Intel  # Intel VAAPI
