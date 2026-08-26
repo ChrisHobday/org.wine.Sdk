@@ -713,4 +713,4 @@ cleanup:
   - /share/man      # Man pages
   - /include        # Header files
   - /lib/pkgconfig  # Package config files
-  - /lib/debug      # Debug files
+  # - /lib/debug      # Debug files
