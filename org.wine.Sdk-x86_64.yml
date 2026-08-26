@@ -13,14 +13,14 @@ sdk-extensions:
 # platform-extensions:
 #   - org.freedesktop.Platform.Locale
 # Re-export org.freedesktop.Platform extensions for child Apps to inherit
-# inherit-extensions:
-#   - org.freedesktop.Platform.GL           # OpenGL
-#   - org.freedesktop.Platform.VAAPI.Intel  # Intel VAAPI
-#   - org.freedesktop.Platform.VulkanLayer  # Vulkan layers like MangoHud, Gamescope, etc
-#   - org.freedesktop.Platform.Timezones    # Timezone data
-#   - org.freedesktop.Platform.GStreamer    # GStreamer codec plugins
-#   - org.freedesktop.Platform.codecs-extra # Video codecs like H.264, H.265, etc
-#   - org.freedesktop.Platform.Icontheme    # Icon theme assets like Breeze, Adwaita, etc
+inherit-extensions:
+  - org.freedesktop.Platform.GL           # OpenGL
+  - org.freedesktop.Platform.VAAPI.Intel  # Intel VAAPI
+  - org.freedesktop.Platform.VulkanLayer  # Vulkan layers like MangoHud, Gamescope, etc
+  - org.freedesktop.Platform.Timezones    # Timezone data
+  - org.freedesktop.Platform.GStreamer    # GStreamer codec plugins
+  - org.freedesktop.Platform.codecs-extra # Video codecs like H.264, H.265, etc
+  - org.freedesktop.Platform.Icontheme    # Icon theme assets like Breeze, Adwaita, etc
 # # inherit-sdk-extensions:
 # #   - org.freedesktop.Sdk.Extension
 # # Re-export org.freedesktop.Platform extensions for child Apps to inherit
