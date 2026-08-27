@@ -296,8 +296,7 @@ modules:
           type: git
           tag-pattern: ^FEX-(\d+(\.\d+)?)$
     build-options:
-      append-path: /usr/lib/llvm-mingw/bin:/usr/lib/sdk/llvm21/bin:/usr/lib/sdk/mingw-w64/bin
-      prepend-ld-library-path: /usr/lib/sdk/llvm21/lib
+      append-path: /usr/lib/llvm-mingw/bin:/usr/lib/sdk/mingw-w64/bin
       env:
         CC: clang
         CXX: clang++
