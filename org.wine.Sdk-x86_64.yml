@@ -79,7 +79,7 @@ modules:
         mkdir -p ${FLATPAK_DEST}/share/runtime/docs/ri   # /usr/share/ri symlinks here but it is not created by default and can cause errors when building modules
 
         # Make locale directories needed by modules
-        pushd /usr/share/locale
+        pushd ${FLATPAK_DEST}/share/locale
         for link in `find . -type l`; do
           mkdir -p $(readlink  $link)
         done
