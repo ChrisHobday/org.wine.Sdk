@@ -71,8 +71,6 @@ modules:
         mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu/GL # 32bit OpenGL Debug
         mkdir -p ${FLATPAK_DEST}/lib/codecs                      # Codecs (replaces ffmpeg-full & openh264)
         mkdir -p ${FLATPAK_DEST}/lib32/codecs                    # 32bit Codecs
-        mkdir -p ${FLATPAK_DEST}/lib/ffmpeg                      # FFmpeg (Not sure if still needed codecs-extra replaced ffmpeg in 25.08)
-        mkdir -p ${FLATPAK_DEST}/lib32/ffmpeg                    # 32bit FFmpeg (Not sure if still needed codecs-extra replaced ffmpeg in 25.08)
 
         # Make docs directories needed by modules
         mkdir -p ${FLATPAK_DEST}/share/runtime/docs/man  # /usr/share/man symlinks here but it is not created by default and can cause errors when building modules
