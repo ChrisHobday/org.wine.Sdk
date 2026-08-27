@@ -46,8 +46,8 @@ add-extensions:
     directory: lib/i386-linux-gnu/dri/intel-vaapi-driver
     version: *runtime-version
     versions: *runtime-version
-    autodelete: false
     no-autodownload: true
+    autodelete: false
     add-ld-path: lib
     download-if: have-intel-gpu
     autoprune-unless: have-intel-gpu
@@ -56,12 +56,14 @@ add-extensions:
     directory: lib/codecs
     add-ld-path: lib
     version: 25.08-extra
+    no-autodownload: true
     autodelete: false
 
   org.freedesktop.Platform.codecs_extra.i386: # 32bit Codecs
     directory: lib32/codecs
     add-ld-path: lib
     version: 25.08-extra
+    no-autodownload: true
     autodelete: false
 modules:
   # Setting up required stuff
@@ -80,17 +82,17 @@ modules:
         mkdir -p ${FLATPAK_DEST}/lib32/ffmpeg                    # 32bit FFmpeg (Not sure if still needed codecs-extra replaced ffmpeg in 25.08)
 
         # Make docs directories needed by modules
-        mkdir -p ${FLATPAK_DEST}/share/runtime/docs/man                     # /usr/share/man symlinks here but it is not created by default and can cause errors when building modules
-        mkdir -p ${FLATPAK_DEST}/share/runtime/docs/info                    # /usr/share/info symlinks here but it is not created by default and can cause errors when building modules
-        mkdir -p ${FLATPAK_DEST}/share/runtime/docs/doc                     # /usr/share/doc symlinks here but it is not created by default and can cause errors when building modules
-        mkdir -p ${FLATPAK_DEST}/share/runtime/docs/ri                      # /usr/share/ri symlinks here but it is not created by default and can cause errors when building modules
+        mkdir -p ${FLATPAK_DEST}/share/runtime/docs/man  # /usr/share/man symlinks here but it is not created by default and can cause errors when building modules
+        mkdir -p ${FLATPAK_DEST}/share/runtime/docs/info # /usr/share/info symlinks here but it is not created by default and can cause errors when building modules
+        mkdir -p ${FLATPAK_DEST}/share/runtime/docs/doc  # /usr/share/doc symlinks here but it is not created by default and can cause errors when building modules
+        mkdir -p ${FLATPAK_DEST}/share/runtime/docs/ri   # /usr/share/ri symlinks here but it is not created by default and can cause errors when building modules
 
         # Make locale directories needed by modules
-        pushd /usr/share/locale                                  # Change to /usr/share/locale directory, and store current directory to be popd back to below
-        for link in `find . -type l`; do                         # For each symlink in /usr/share/locale
-          mkdir -p $(readlink  $link)                            # Make the directory the symlink is pointing to (If it doesn't already exist)
+        pushd /usr/share/locale
+        for link in `find . -type l`; do
+          mkdir -p $(readlink  $link)
         done
-        popd                                                     # Change back to starting directory (location where last pushd was used above)
+        popd
 
   # For OpenGL rendering in bitmaps (Optional Wine dependency) (An old version of mesa, good enough for building the libosmesa part we need)
   - name: libosmesa
