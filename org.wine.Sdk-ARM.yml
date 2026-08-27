@@ -246,10 +246,10 @@ modules:
         url: https://gitlab.winehq.org/wine/wine.git
         tag: wine-11.15
         commit: 2df1ee28039cf84776eb1421ed90bd154cebb65f
+        is-main-source: true
         x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
           tag-pattern: ^wine-(\d+\.\d+)$ # Regex pattern that matches latest git tag and compares it to source
-          is-main-source: true
 
       # Wine Staging, bleeding edge wine patches
       - type: git
@@ -413,11 +413,11 @@ modules:
       - type: archive
         url: https://deb.debian.org/debian/pool/main/c/cabextract/cabextract_1.11.orig.tar.gz
         sha256: b5546db1155e4c718ff3d4b278573604f30dd64c3c5bfd4657cd089b823a3ac6
-    x-checker-data:
-      type: html
-      url: https://ftp.debian.org/debian/pool/main/c/cabextract/
-      version-pattern: cabextract_(\d[\d\.]+\d)\.orig\.tar\.gz
-      url-template: https://deb.debian.org/debian/pool/main/c/cabextract/cabextract_$version.orig.tar.gz
+        x-checker-data:
+          type: html
+          url: https://ftp.debian.org/debian/pool/main/c/cabextract/
+          version-pattern: cabextract_(\d[\d\.]+\d)\.orig\.tar\.gz
+          url-template: https://deb.debian.org/debian/pool/main/c/cabextract/cabextract_$version.orig.tar.gz
 
   # Replacement fonts that Windows expects in many instances (Arial, Times New Roman, Courier)
   - name: liberation-fonts-ttf
