@@ -71,7 +71,7 @@ modules:
       - |
         # Make directories needed by extensions
         mkdir -p ${FLATPAK_DEST}/lib/i386-linux-gnu              # 32bit Linux compatibility
-        touch ${FLATPAK_DEST}/lib/i386-linux-gnu/.keep           # File to make sure this directory is not pruned
+        # touch ${FLATPAK_DEST}/lib/i386-linux-gnu/.keep           # File to make sure this directory is not pruned
         # mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu    # 32bit Linux compatibility debug
         # mkdir -p ${FLATPAK_DEST}/lib/debug/lib/i386-linux-gnu/GL # 32bit OpenGL Debug
         # mkdir -p ${FLATPAK_DEST}/lib/codecs                      # Codecs (replaces ffmpeg-full & openh264)
