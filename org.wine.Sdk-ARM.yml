@@ -35,7 +35,6 @@ modules:
       - |
         # Make directories needed by extensions
         mkdir -p ${FLATPAK_DEST}/lib/codecs         # Codecs (replaces ffmpeg-full & openh264)
-        mkdir -p ${FLATPAK_DEST}/lib/ffmpeg         # FFmpeg (Not sure if still needed codecs-extra replaced ffmpeg in 25.08)
 
         # Make docs directories needed by modules
         mkdir -p /usr/share/runtime/docs/man        # /usr/share/man symlinks here but it is not created by default and can cause errors when building modules
