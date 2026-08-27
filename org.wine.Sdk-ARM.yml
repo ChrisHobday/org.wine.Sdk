@@ -319,7 +319,6 @@ modules:
           -DTUNE_CPU=none \
           ..
         ninja wow64fex
-        ls -la Bin # Debugging
         install -Dm755 Bin/libwow64fex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit.dll # Install/rename the wow64 fex-wine dll in place of the Windows expected xtajit dll
         cd ..
  
@@ -337,7 +336,6 @@ modules:
           -DTUNE_CPU=none \
           ..
         ninja arm64ecfex
-        ls -la Bin # Debugging
         install -Dm755 Bin/libarm64ecfex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit64.dll # Install/rename the arm64ec fex-wine dll in place of the Windows expected xtajit64 dll
         cd ..
 
