@@ -31,7 +31,7 @@ add-extensions:
     autodelete: false
 modules:
   # Setting up required stuff
-  - name: setup
+  - name: Setup
     buildsystem: simple
     build-commands:
       - |
@@ -50,6 +50,27 @@ modules:
           mkdir -p $(readlink  $link)
         done
         popd
+
+  # LLVM Clang compiler, needed for compiling some wine --enable-archs backends on ARM and fex-wine
+  - name: llvm-mingw
+    only-arches:
+      - aarch64 # Only build this module when building on ARM
+    sources:
+      - type: archive
+        url: https://github.com/mstorsjo/llvm-mingw/releases/download/20260616/llvm-mingw-20260616-ucrt-ubuntu-22.04-aarch64.tar.xz
+        sha256: e7e5d135d93d3f2a3beaaea633a5b0e66ac75391a53feae654391913dd76102b
+        strip-components: 1
+        x-checker-data:
+          type: json
+          url: https://api.github.com/repos/mstorsjo/llvm-mingw/releases/latest
+          tag-query: .tag_name
+          version-query: .tag_name
+          url-query: >-
+            .assets[] | select(.name == "llvm-mingw-" + $version + "-ucrt-ubuntu-22.04-aarch64.tar.xz") | .browser_download_url
+    buildsystem: simple
+    build-commands:
+      - mkdir -p ${FLATPAK_DEST}/lib/llvm-mingw
+      - cp -a . ${FLATPAK_DEST}/lib/llvm-mingw/
 
   # For OpenGL rendering in bitmaps (Optional Wine dependency) (An old version of mesa, good enough for building the libosmesa part we need)
   - name: libosmesa
@@ -148,6 +169,20 @@ modules:
           type: html
           url: https://deb.debian.org/debian/pool/main/libc/libcapi20-3/ # Use this file to...
           pattern: (libcapi20-3_(\d[\d\.]+\d).orig.tar.bz2)              # Search for this regex pattern and compare it to source to see if there is a newer version
+      # Needed because libcapi's config.guess is outdated and doesn't recognize aarch64 architecture
+      - type: file
+        url: https://git.savannah.gnu.org/cgit/config.git/plain/config.guess
+        sha256: ac18bbd7dc3769e1646af49ebba331a391829f4a73579b735dc8d439bd1c7f07
+        dest-filename: config.guess
+        only-archs:
+          - aarch64 # Only use this source when building on ARM
+      # Needed because libcapi's config.sub is outdated and doesn't recognize aarch64 architecture
+      - type: file
+        url: https://git.savannah.gnu.org/cgit/config.git/plain/config.sub
+        sha256: f9a31e9a3f5b7cbeb8d8c3f2015895a51e7222130114c9c363fcbccd78e4bf6b
+        dest-filename: config.sub
+        only-archs:
+          - aarch64 # Only use this source when building on ARM
 
   # For Kerberos authentication protocol (Optional Wine dependency)
   - name: krb5
@@ -218,9 +253,9 @@ modules:
         tag: wine-11.15
         commit: 2df1ee28039cf84776eb1421ed90bd154cebb65f
         is-main-source: true
-        x-checker-data:
+        x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
-          tag-pattern: ^wine-(\d+\.\d+)$
+          tag-pattern: ^wine-(\d+\.\d+)$ # Regex pattern that matches latest git tag and compares it to source
 
       # Wine Staging, bleeding edge wine patches
       - type: git
@@ -228,9 +263,9 @@ modules:
         tag: v11.15
         commit: 634865f9e409c7101adc6809f23af34d2a668525
         dest: wine-staging
-        x-checker-data:
+        x-checker-data: # Checks for a newer version when org.flathub.flatpak-external-data-checker is ran on this file
           type: git
-          tag-pattern: ^v(\d+\.\d+)$
+          tag-pattern: ^v(\d+\.\d+)$ # Regex pattern that matches latest git tag and compares it to source
 
       # Script that runs before build and applies the above wine-staging patches
       - type: shell
@@ -238,14 +273,23 @@ modules:
           - ./wine-staging/staging/patchinstall.py DESTDIR="./" --all
     build-options:
       arch:
-        x86_64:
+        x86_64: # Use these options when building on x86_64
+          append-path: /usr/lib/sdk/mingw-w64/bin # Add to PATH, /usr/lib/sdk/mingw-w64/bin contains x86_64-w64-mingw32-gcc and i686-w64-mingw32-gcc compilers from sdk-extension org.freedesktop.Sdk.Extension.mingw-w64
           config-opts:
             - --prefix=${FLATPAK_DEST}
             - --enable-archs=x86_64,i386 # Build for x86_64 - 64bit x86 dll/exe, i386 - 32bit x86 dll/exe (Builds in WoW64 mode because 32bit is included)
             - --with-mingw               # Needed for the PE-format builds WoW64 requires (ntdll etc.)
             - --disable-winemenubuilder
             - --disable-tests
-      append-path: /usr/lib/sdk/mingw-w64/bin:/usr/lib/sdk/toolchain-i386/bin # Add to PATH, /usr/lib/sdk/mingw-w64/bin contains x86_64-w64-mingw32-gcc and i686-w64-mingw32-gcc compilers from sdk-extension org.freedesktop.Sdk.Extension.mingw-w64, and /usr/lib/sdk/toolchain-i386/bin contains gnu 32bit libs (needed for building the 32bit version of Wine) from org.freedesktop.Sdk.Extension.toolchain-i386
+        aarch64: # Use these options when building on ARM
+          append-path: /usr/lib/llvm-mingw/bin # Add llvm-mingw compiler to the path
+          config-opts:
+            - --prefix=${FLATPAK_DEST}
+            - --enable-archs=aarch64,arm,arm64ec,i386 # Build for aarch64 - 64bit ARM dll/exe, arm - 32bit ARM dll/exe, arm64ec - Native 64bit x86 Windows dll/exe rebuilt for running on ARM, i386 - 32bit x86 dll/exe (Builds in WoW64 mode because 32bit is included)
+            - --with-mingw=clang                      # Use LLVM/Clang compilers (Some --enable-archs require this)
+            - --disable-winemenubuilder
+            - --disable-tests
+          cflags: -fno-stack-protector # Override org.freedesktop.Sdk default -fstack-protector-strong (Can cause segmentation faults on ARM without this)
       libdir: /usr/lib
       env:
         LIBDIR: lib
@@ -253,6 +297,62 @@ modules:
       - LDCONFIG=/bin/true                # When make install calls ldconfig return true (Default can cause problems when building in a Flatpak)
       - UPDATE_DESKTOP_DATABASE=/bin/true # When make install calls update-desktop-database return true (Default can cause problems when building in a Flatpak)
       - INSTALL_PROGRAM_FLAGS=-s          # Strip debug symbols from binaries when installed
+
+  # FEX x86 to ARM emulator backend for wine, allows running 32/64bit x86 exe/dll files on ARM. Replaces wine's xtajit.dll and xtajit64.dll
+  - name: fex-wine
+    only-arches:
+      - aarch64 # Only build this module when building on ARM
+    sources:
+      - type: git
+        url: https://github.com/FEX-Emu/FEX.git
+        tag: FEX-2608
+        submodules: true
+        x-checker-data:
+          type: git
+          tag-pattern: ^FEX-(\d+(\.\d+)?)$
+    build-options:
+      append-path: /usr/lib/llvm-mingw/bin:/usr/lib/sdk/mingw-w64/bin
+      env:
+        CC: clang
+        CXX: clang++
+    buildsystem: simple
+    build-commands:
+      - |
+        unset CFLAGS CXXFLAGS LDFLAGS ASFLAGS # Unset default Flatpak flags (They cause errors here)
+
+        # WoW64 32bit backend (Allows running 32bit x86 dll/exe)
+        mkdir build-wow64
+        cd build-wow64
+        cmake -GNinja \
+          -DCMAKE_TOOLCHAIN_FILE=../Data/CMake/toolchain_mingw.cmake \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DMINGW_TRIPLE=aarch64-w64-mingw32 \
+          -DENABLE_LTO=False \
+          -DBUILD_TESTS=False \
+          -DBUILD_TESTING=False \
+          -DENABLE_JEMALLOC_GLIBC_ALLOC=False \
+          -DTUNE_CPU=none \
+          ..
+        ninja wow64fex
+        install -Dm755 Bin/libwow64fex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit.dll # Install/rename the wow64 fex-wine dll in place of the Windows expected xtajit dll
+        cd ..
+ 
+        # ARM64EC 64bit backend (Allows running 64bit x86 dll/exe)
+        mkdir build-arm64ec
+        cd build-arm64ec
+        cmake -GNinja \
+          -DCMAKE_TOOLCHAIN_FILE=../Data/CMake/toolchain_mingw.cmake \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DMINGW_TRIPLE=arm64ec-w64-mingw32 \
+          -DENABLE_LTO=False \
+          -DBUILD_TESTS=False \
+          -DBUILD_TESTING=False \
+          -DENABLE_JEMALLOC_GLIBC_ALLOC=False \
+          -DTUNE_CPU=none \
+          ..
+        ninja arm64ecfex
+        install -Dm755 Bin/libarm64ecfex.dll ${FLATPAK_DEST}/lib/wine/aarch64-windows/xtajit64.dll # Install/rename the arm64ec fex-wine dll in place of the Windows expected xtajit64 dll
+        cd ..
 
   # Wine addon that allows opening website content
   - name: wine-gecko
@@ -637,5 +737,3 @@ cleanup:
   - /include                            # Header files
   - /lib/pkgconfig                      # Package config files
   - /lib/debug                          # Debug files
-  - '!/lib/debug/lib/i386-linux-gnu'    # Leave 32bit Linux compatibility debug (Needed by org.freedesktop.Platform.Compat.i386.Debug)
-  - '!/lib/debug/lib/i386-linux-gnu/GL' # Leave 32bit OpenGL Debug (Needed by org.freedesktop.Platform.GL32.Debug)

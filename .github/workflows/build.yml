@@ -43,13 +43,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .flatpak-builder
-          key: flatpak-builder-${{ hashFiles('org.wine.Sdk-ARM.yml') }}
+          key: flatpak-builder-${{ hashFiles('org.wine.Sdk.yml') }}
           restore-keys: |
             flatpak-builder-
 
       - name: Build
         run: |
-          flatpak-builder --force-clean --repo=repo build-dir org.wine.Sdk-ARM.yml
+          flatpak-builder --force-clean --repo=repo build-dir org.wine.Sdk.yml
 
       - name: Upload build output
         if: always()
@@ -92,13 +92,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .flatpak-builder
-          key: flatpak-builder-x86_64-${{ hashFiles('org.wine.Sdk-x86_64.yml') }}
+          key: flatpak-builder-x86_64-${{ hashFiles('org.wine.Sdk.yml') }}
           restore-keys: |
             flatpak-builder-x86_64-
  
       - name: Build
         run: |
-          flatpak-builder --force-clean --repo=repo --disable-rofiles-fuse build-dir org.wine.Sdk-x86_64.yml
+          flatpak-builder --force-clean --repo=repo --disable-rofiles-fuse build-dir org.wine.Sdk.yml
  
       - name: Upload build output
         if: always()
